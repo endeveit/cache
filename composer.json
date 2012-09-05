@@ -1,0 +1,22 @@
+{
+    "name": "endeveit/cache",
+    "type": "library",
+    "description": "Simple caching library with tags support",
+    "keywords": ["cache", "tags", "redis", "predis"],
+    "homepage": "http://github.com/endeveit/cache",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nikita Vershinin",
+            "email": "endeveit@gmail.com",
+            "homepage": "http://endeveit.net"
+        }
+    ],
+    "require": {
+        "php": ">=5.3",
+        "predis/predis": "*"
+    },
+    "autoload": {
+        "psr-0": { "Cache": "src/" }
+    }
+}
