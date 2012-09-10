@@ -70,7 +70,7 @@ class Predis implements DriverInterface
      */
     public function __construct(Client $predis)
     {
-        $this->predis = &$predis;
+        $this->predis = $predis;
     }
 
     /**
