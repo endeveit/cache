@@ -20,11 +20,11 @@ class Predis implements DriverInterface
 {
 
     /**
-     * The max lifetime of the data in cache (2 days).
+     * The max lifetime of the data in cache (31 days).
      *
      * @const integer
      */
-    const MAX_LIFETIME = 172800;
+    const MAX_LIFETIME = 2678400;
 
     /**
      * Predis object.
