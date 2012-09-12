@@ -32,6 +32,27 @@ abstract class Pdo implements DriverInterface
     protected $dbh = null;
 
     /**
+     * Tables prefix.
+     *
+     * @var string
+     */
+    protected $prefix = null;
+
+    /**
+     * Array with quoted tables names used in driver.
+     *
+     * @var array
+     */
+    protected $availableTables = array();
+
+    /**
+     * Array with quoted fields names used in tables.
+     *
+     * @var array
+     */
+    protected $availableFields = array();
+
+    /**
      * Do ve have transactions enabled.
      *
      * @var boolean
@@ -42,10 +63,22 @@ abstract class Pdo implements DriverInterface
      * The class constructor.
      *
      * @param \PDO $dbh
+     * @param string $prefix
      */
-    public function __construct(\PDO $dbh)
+    public function __construct(\PDO $dbh, $prefix = 'cache_')
     {
-        $this->dbh = $dbh;
+        $this->dbh    = $dbh;
+        $this->prefix = strval($prefix);
+
+        // Quote tables names
+        foreach (array('cache', 'tag') as $tableName) {
+            $this->availableTables[$tableName] = $this->getQuotedIdentifier($prefix . $tableName);
+        }
+
+        // Quote fields names
+        foreach (array('id', 'data', 'mktime', 'expire', 'name') as $fieldName) {
+            $this->availableFields[$fieldName] = $this->getQuotedIdentifier($fieldName);
+        }
     }
 
     /**
@@ -58,14 +91,14 @@ abstract class Pdo implements DriverInterface
     {
         $sql = sprintf(
             'SELECT %s, %s FROM %s WHERE %s = :id',
-            $this->getFieldNameQuoted('data'),
-            $this->getFieldNameQuoted('expire'),
-            $this->getTableNameQuoted('cache'),
-            $this->getFieldNameQuoted('id')
+            $this->availableFields['data'],
+            $this->availableFields['expire'],
+            $this->availableTables['cache'],
+            $this->availableFields['id']
         );
 
         $result = $this->fetchRows($sql, array('id' => $id));
-        if (!empty($result) && $result[0]['expire'] > time()) {
+        if (!empty($result) && ($result[0]['expire'] == 0 || $result[0]['expire'] > time())) {
             return $result['data'];
         }
 
@@ -92,12 +125,6 @@ abstract class Pdo implements DriverInterface
             $lifetime = (integer) $lifetime;
         }
 
-        $mktime = time();
-        $expire = $mktime + $lifetime;
-
-        $quotedTable = $this->getTableNameQuoted('cache');
-        $quotedId    = $this->getFieldNameQuoted('id');
-
         $this->transactionsEnabled = false;
 
         $this->dbh->beginTransaction();
@@ -106,21 +133,24 @@ abstract class Pdo implements DriverInterface
             $this->executeQuery(
                 sprintf(
                     'DELETE FROM %s WHERE %s = :id',
-                    $quotedTable,
-                    $quotedId
+                    $this->availableTables['cache'],
+                    $this->availableFields['id']
                 ),
                 array('id' => $id)
             );
+
+            $mktime = time();
+            $expire = $mktime + $lifetime;
 
             $this->executeQuery(
                 sprintf(
                     'INSERT INTO %s (%s, %s, %s, %s) VALUES ' .
                         '(:id, :data, :mktime, :expire)',
-                    $quotedTable,
-                    $quotedId,
-                    $this->getFieldNameQuoted('data'),
-                    $this->getFieldNameQuoted('mktime'),
-                    $this->getFieldNameQuoted('expire')
+                    $this->availableTables['cache'],
+                    $this->availableFields['id'],
+                    $this->availableFields['data'],
+                    $this->availableFields['mktime'],
+                    $this->availableFields['expire']
                 ),
                 array(
                     'id'     => $id,
@@ -155,14 +185,13 @@ abstract class Pdo implements DriverInterface
      */
     public function remove($id)
     {
-        $params   = array('id' => $id);
-        $quotedId = $this->getFieldNameQuoted('id');
+        $params = array('id' => $id);
 
         $this->executeQuery(
             sprintf(
                 'DELETE FROM %s WHERE %s = :id',
-                $this->getTableNameQuoted('cache'),
-                $quotedId
+                $this->availableTables['cache'],
+                $this->availableFields['id']
             ),
             $params
         );
@@ -170,8 +199,8 @@ abstract class Pdo implements DriverInterface
         $this->executeQuery(
             sprintf(
                 'DELETE FROM %s WHERE %s = :id',
-                $this->getTableNameQuoted('tag'),
-                $quotedId
+                $this->availableTables['tag'],
+                $this->availableFields['id']
             ),
             $params
         );
@@ -220,17 +249,14 @@ abstract class Pdo implements DriverInterface
      */
     public function touch($id, $extraLifetime)
     {
-        $quotedTable  = $this->getTableNameQuoted('cache');
-        $quotedId     = $this->getFieldNameQuoted('id');
-        $quotedExpire = $this->getFieldNameQuoted('expire');
-        $row          = $this->fetchRows(
+        $row = $this->fetchRows(
             sprintf(
                 'SELECT %s FROM %s WHERE %s = :id AND (%s = 0 OR %s > :expire)',
-                $quotedExpire,
-                $quotedTable,
-                $quotedId,
-                $quotedExpire,
-                $quotedExpire
+                $this->availableFields['expire'],
+                $this->availableTables['cache'],
+                $this->availableFields['id'],
+                $this->availableFields['expire'],
+                $this->availableFields['expire']
             ),
             array(
                 'id'     => $id,
@@ -245,10 +271,10 @@ abstract class Pdo implements DriverInterface
         $this->executeQuery(
             sprintf(
                 'UPDATE %s SET %s = :mktime, %s = :expire WHERE %s = :id',
-                $quotedTable,
-                $this->getFieldNameQuoted('mktime'),
-                $quotedExpire,
-                $quotedId
+                $this->availableTables['cache'],
+                $this->availableFields['mktime'],
+                $this->availableFields['expire'],
+                $this->availableFields['id']
             ),
             array(
                 'mktime' => time(),
@@ -270,17 +296,14 @@ abstract class Pdo implements DriverInterface
      */
     protected function registerTag($id, $tag)
     {
-        $params      = array('name' => $tag, 'id' => $id);
-        $quotedTable = $this->getTableNameQuoted('tag');
-        $quotedId    = $this->getFieldNameQuoted('id');
-        $quotedName  = $this->getFieldNameQuoted('name');
+        $params = array('name' => $tag, 'id' => $id);
 
         $this->executeQuery(
             sprintf(
                 'DELETE FROM %s WHERE %s = :name AND %s = :id',
-                $quotedTable,
-                $quotedName,
-                $quotedId
+                $this->availableTables['tag'],
+                $this->availableFields['name'],
+                $this->availableFields['id']
             ),
             $params
         );
@@ -288,9 +311,9 @@ abstract class Pdo implements DriverInterface
         $this->executeQuery(
             sprintf(
                 'INSERT INTO %s (%s, %s) VALUES (:name, :id)',
-                $quotedTable,
-                $quotedId,
-                $quotedName
+                $this->availableTables['tag'],
+                $this->availableFields['id'],
+                $this->availableFields['name']
             ),
             $params
         );
@@ -308,15 +331,15 @@ abstract class Pdo implements DriverInterface
      */
     protected function getIdsMatchingTags($tags = array())
     {
-        $first    = true;
-        $ids      = array();
-        $result   = array();
-        $quotedId = $this->getFieldNameQuoted('id');
-        $sql      = sprintf(
+        $first  = true;
+        $ids    = array();
+        $result = array();
+        $sql    = sprintf(
             'SELECT DISTINCT(%s) AS %s FROM %s WHERE %s = :name',
-            $quotedId,
-            $this->getTableNameQuoted('tag'),
-            $this->getFieldNameQuoted('name')
+            $this->availableFields['id'],
+            $this->availableFields['id'],
+            $this->availableTables['tag'],
+            $this->availableFields['name']
         );
 
         foreach ($tags as $tag) {
@@ -412,21 +435,19 @@ abstract class Pdo implements DriverInterface
     }
 
     /**
-     * Returns quoted table name.
+     * Builds the tables structure in database.
      *
      * @abstract
-     * @param string $tableName
-     * @return string
      */
-    abstract protected function getTableNameQuoted($tableName);
+    abstract public function buildStructure();
 
     /**
-     * Returns quoted field name.
+     * Returns quoted identifier (table name or field name).
      *
      * @abstract
-     * @param string $fieldName
+     * @param string $identifier
      * @return string
      */
-    abstract protected function getFieldNameQuoted($fieldName);
+    abstract protected function getQuotedIdentifier($identifier);
 
 }
