@@ -1,10 +1,15 @@
 <?php
+/**
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @author Nikita Vershinin <endeveit@gmail.com>
+ * @license MIT
+ */
 namespace Cache;
 
 /**
- * User: endeveit
- * Date: 2012-09-11
- * Time: 16:08
+ * Base exception.
  */
 class Exception extends \Exception
 {
