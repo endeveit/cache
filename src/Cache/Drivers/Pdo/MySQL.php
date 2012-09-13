@@ -32,7 +32,7 @@ class MySQL extends Pdo
             $this->executeQuery('DROP INDEX IF EXISTS `' . $this->prefix .
                 'tag_name_index`');
             $this->executeQuery('DROP INDEX IF EXISTS `' . $this->prefix .
-                'cache_id_expire_index`');
+                'cache_id_expires_at_index`');
             $this->executeQuery('DROP TABLE IF EXISTS `' . $this->prefix .
                 'cache`');
             $this->executeQuery('DROP TABLE IF EXISTS `' . $this->prefix .
@@ -42,8 +42,8 @@ class MySQL extends Pdo
                 'CREATE TABLE `' . $this->prefix . 'cache` (' .
                     '`id` VARCHAR(255) PRIMARY KEY, ' .
                     '`data` LONGTEXT, ' .
-                    '`mktime` UNSIGNED INTEGER, ' .
-                    '`expire` UNSIGNED INTEGER)');
+                    '`created_at` UNSIGNED INTEGER, ' .
+                    '`expires_at` UNSIGNED INTEGER)');
             $this->executeQuery(
                 'CREATE TABLE `' . $this->prefix .
                     'tag` (`name` VARCHAR(255), `id` TEXT)');
@@ -55,8 +55,8 @@ class MySQL extends Pdo
                     'tag_name_index` ON `' . $this->prefix . 'tag`(`name`)');
             $this->executeQuery(
                 'CREATE INDEX `' . $this->prefix .
-                    'cache_id_expire_index` ON `' . $this->prefix .
-                        'cache`(`id`, `expire`)');
+                    'cache_id_expires_at_index` ON `' . $this->prefix .
+                        'cache`(`id`, `expires_at`)');
 
             $this->dbh->commit();
         } catch (Exception $e) {

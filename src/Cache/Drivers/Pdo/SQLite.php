@@ -49,7 +49,7 @@ class SQLite extends Pdo
             $this->executeQuery('DROP INDEX IF EXISTS \'' . $this->prefix .
                 'tag_name_index\'');
             $this->executeQuery('DROP INDEX IF EXISTS \'' . $this->prefix .
-                'cache_id_expire_index\'');
+                'cache_id_expires_at_index\'');
             $this->executeQuery('DROP TABLE IF EXISTS \'' . $this->prefix .
                 'cache\'');
             $this->executeQuery('DROP TABLE IF EXISTS \'' . $this->prefix .
@@ -59,8 +59,8 @@ class SQLite extends Pdo
                 'CREATE TABLE \'' . $this->prefix . 'cache\' (' .
                     '\'id\' TEXT PRIMARY KEY, ' .
                     '\'data\' BLOB, '.
-                    '\'mktime\' INTEGER,' .
-                    '\'expire\' INTEGER)');
+                    '\'created_at\' INTEGER,' .
+                    '\'expires_at\' INTEGER)');
             $this->executeQuery(
                 'CREATE TABLE \'' . $this->prefix .
                     'tag\' (\'name\' TEXT, \'id\' TEXT)');
@@ -73,8 +73,8 @@ class SQLite extends Pdo
                         'tag\'(\'name\')');
             $this->executeQuery(
                 'CREATE INDEX \'' . $this->prefix .
-                    'cache_id_expire_index\' ON \'' . $this->prefix .
-                        'cache\'(\'id\', \'expire\')');
+                    'cache_id_expires_at_index\' ON \'' . $this->prefix .
+                        'cache\'(\'id\', \'expires_at\')');
 
             $this->dbh->commit();
         } catch (Exception $e) {

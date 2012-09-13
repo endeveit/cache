@@ -50,7 +50,7 @@ abstract class Pdo implements DriverInterface
      *
      * @var array
      */
-    protected $rawFields = array('id', 'data', 'mktime', 'expire', 'name');
+    protected $rawFields = array('id', 'data', 'created_at', 'expires_at', 'name');
 
     /**
      * Quoted names of tables used in driver.
@@ -98,18 +98,18 @@ abstract class Pdo implements DriverInterface
         $sql = sprintf(
             'SELECT %s, %s FROM %s WHERE %s = ?',
             $this->fields['data'],
-            $this->fields['expire'],
+            $this->fields['expires_at'],
             $this->tables['cache'],
             $this->fields['id']
         );
 
         $result = $this->fetchRows($sql, array($id));
         if (!empty($result)
-            && ($result[0]['expire'] == 0 || $result[0]['expire'] > time())) {
+            && ($result[0]['expires_at'] == 0 || $result[0]['expires_at'] > time())) {
             return unserialize($result['data']);
         }
 
-        false;
+        return false;
     }
 
     /**
@@ -148,8 +148,8 @@ abstract class Pdo implements DriverInterface
                 array($id)
             );
 
-            $mktime = time();
-            $expire = $mktime + $lifetime;
+            $createdAt = time();
+            $expiresAt = $createdAt + $lifetime;
 
             $this->executeQuery(
                 sprintf(
@@ -158,10 +158,10 @@ abstract class Pdo implements DriverInterface
                     $this->tables['cache'],
                     $this->fields['id'],
                     $this->fields['data'],
-                    $this->fields['mktime'],
-                    $this->fields['expire']
+                    $this->fields['created_at'],
+                    $this->fields['expires_at']
                 ),
-                array($id, serialize($data), $mktime, $expire)
+                array($id, serialize($data), $createdAt, $expiresAt)
             );
 
             foreach ($tags as $tag) {
@@ -258,11 +258,11 @@ abstract class Pdo implements DriverInterface
         $row = $this->fetchRows(
             sprintf(
                 'SELECT %s FROM %s WHERE %s = ? AND (%s = 0 OR %s > ?)',
-                $this->fields['expire'],
+                $this->fields['expires_at'],
                 $this->tables['cache'],
                 $this->fields['id'],
-                $this->fields['expire'],
-                $this->fields['expire']
+                $this->fields['expires_at'],
+                $this->fields['expires_at']
             ),
             array($id, time())
         );
@@ -275,11 +275,11 @@ abstract class Pdo implements DriverInterface
             sprintf(
                 'UPDATE %s SET %s = ?, %s = ? WHERE %s = ?',
                 $this->tables['cache'],
-                $this->fields['mktime'],
-                $this->fields['expire'],
+                $this->fields['created_at'],
+                $this->fields['expires_at'],
                 $this->fields['id']
             ),
-            array(time(), $row[0]['expire'] + $extraLifetime, $id)
+            array(time(), $row[0]['expires_at'] + $extraLifetime, $id)
         );
 
         return true;
