@@ -8,21 +8,15 @@
  */
 namespace Cache\Drivers;
 
+use Cache\Abstractions\MaxLifetime;
 use Cache\Exception;
 use Cache\Interfaces\Driver as DriverInterface;
 
 /**
  * Driver that stores data in relational database and uses PDO to work with it.
  */
-abstract class Pdo implements DriverInterface
+abstract class Pdo extends MaxLifetime implements DriverInterface
 {
-
-    /**
-     * The max lifetime of the data in cache (31 days).
-     *
-     * @const integer
-     */
-    const MAX_LIFETIME = 2678400;
 
     /**
      * The class constructor.
@@ -125,15 +119,6 @@ abstract class Pdo implements DriverInterface
     {
         $this->validateIdentifier($id);
 
-        if (false !== $lifetime) {
-            $lifetime = (integer) $lifetime;
-            $lifetime = ($lifetime > self::MAX_LIFETIME
-                ? self::MAX_LIFETIME
-                : $lifetime);
-        } else {
-            $lifetime = (integer) $lifetime;
-        }
-
         $this->transactionsEnabled = false;
 
         $this->dbh->beginTransaction();
@@ -148,8 +133,11 @@ abstract class Pdo implements DriverInterface
                 array($id)
             );
 
+            $lifetime  = $this->getFinalLifetime($lifetime);
             $createdAt = time();
-            $expiresAt = $createdAt + $lifetime;
+            $expiresAt = $lifetime != 0
+                ? $createdAt + $lifetime
+                : 0;
 
             $this->executeQuery(
                 sprintf(
@@ -271,6 +259,10 @@ abstract class Pdo implements DriverInterface
             return false;
         }
 
+        $expiresAt = $row[0]['expires_at'] != 0
+            ? $row[0]['expires_at'] + $extraLifetime
+            : time() + $extraLifetime;
+
         $this->executeQuery(
             sprintf(
                 'UPDATE %s SET %s = ?, %s = ? WHERE %s = ?',
@@ -279,7 +271,7 @@ abstract class Pdo implements DriverInterface
                 $this->fields['expires_at'],
                 $this->fields['id']
             ),
-            array(time(), $row[0]['expires_at'] + $extraLifetime, $id)
+            array(time(), $expiresAt, $id)
         );
 
         return true;

@@ -31,6 +31,8 @@ class Mongo implements DriverInterface
     protected $collection;
 
     /**
+     * The class constructor.
+     *
      * @param \Mongo $con
      * @param string $dbName
      * @param string $collection

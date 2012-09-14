@@ -8,6 +8,7 @@
  */
 namespace Cache\Drivers;
 
+use Cache\Abstractions\MaxLifetime;
 use Cache\Interfaces\Driver as DriverInterface;
 use Predis\Client;
 use Predis\Network\PredisCluster;
@@ -16,15 +17,8 @@ use Predis\Network\PredisCluster;
  * Driver that stores data in Redis and uses Predis library
  * to work with it.
  */
-class Predis implements DriverInterface
+class Predis extends MaxLifetime implements DriverInterface
 {
-
-    /**
-     * The max lifetime of the data in cache (31 days).
-     *
-     * @const integer
-     */
-    const MAX_LIFETIME = 2678400;
 
     /**
      * Predis object.
@@ -107,12 +101,9 @@ class Predis implements DriverInterface
         $r0 = $this->predis->hset($id, 'data', serialize($data));
         $r1 = $this->predis->hset($id, 'tags', serialize($tags));
 
-        // The lifetime cannot be bigger than MAX_LIFETIME
-        if (false !== $lifetime) {
-            $lifetime = (integer) $lifetime;
-            $this->predis->expire($id, ($lifetime > self::MAX_LIFETIME
-                ? self::MAX_LIFETIME
-                : $lifetime));
+        $lifetime = $this->getFinalLifetime($lifetime);
+        if ($lifetime > 0) {
+            $this->predis->expire($id, $lifetime);
         } else {
             $this->predis->expire($id, self::MAX_LIFETIME);
         }

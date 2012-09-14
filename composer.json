@@ -1,8 +1,19 @@
 {
     "name": "endeveit/cache",
     "type": "library",
-    "description": "Simple caching library with tagging entries support.",
-    "keywords": ["cache", "tags", "redis", "predis", "mongo", "mongodb", "sqlite", "mysql"],
+    "description": "Simple caching library with support for tags.",
+    "keywords": [
+        "cache",
+        "tags",
+        "redis",
+        "predis",
+        "mongo",
+        "mongodb",
+        "sqlite",
+        "mysql",
+        "memcache",
+        "memcached"
+    ],
     "homepage": "http://github.com/endeveit/cache",
     "license": "MIT",
     "authors": [
