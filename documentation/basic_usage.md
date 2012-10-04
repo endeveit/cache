@@ -3,9 +3,11 @@ Basic usage
 
 First of all please be sure satisfying requirements described in README.md
 You'll need composer (http://getcomposer.org/download/) to start.
+
     $ composer.phar install
 
 This will create directory vendor with some stuff inside. In your application write
+
     require "cache/vendor/autoload.php";
     $memcache = new Memcache();
     $memcache->connect("10.0.0.104", 11211);
