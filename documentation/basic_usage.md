@@ -16,7 +16,9 @@ This will create directory vendor with some stuff inside. In your application wr
     var_dump($cache->load($someKey));
 
 List of currently available drivers you can find in directory src/Cache/Drivers/.
+
 Each driver requires at least connection to caching backend as a constructor parameter and Mongo driver requires additionally database name.
+
 Methods of caching interface are described below.
 
 load($id)
@@ -28,8 +30,11 @@ save($data, $id, array $tags = array(), $lifetime = false)
 ----------------------------------------------------------
 
 Saves data in cache assotiating $id to it and optionally tagging it with $tags and setting max lifetime with $lifetime.
+
 Takes mandatory arguments $data (data which you desire to cache itself) and $id (unique identifier in cache storage) and also optional arguments $tags (array of string-valued tags to mark item in cache with) and $lifetime (number of seconds item would live in cache).
+
 If specified $lifetime and it's more than 0 the item would be automatically removed from cache after specified number of seconds and would be available during this time interval.
+
 Lifetime cannot be more than 31 days.
 
 remove($id)
@@ -54,6 +59,9 @@ Notes on caching backend drivers
 ================================
 
 For some caching backend drivers there are some limitation described in this chapter.
+
 In case of PDO backend identifiers (item id or any tag) cannot be more than 255 bytes length.
+
 When using Memcache backend identifiers should match ^[a-zA-Z0-9_]+$ regexp pattern.
+
 Mongo backend provides ensureIndex() method which creates index on collection for fast search by tags and identifiers and it should be invoked at least once at first use (it's better to invoke it every time).
