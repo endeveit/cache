@@ -2,7 +2,7 @@ Basic usage
 =============
 
 First of all please be sure satisfying requirements described in README.md
-You'll need composer (http://getcomposer.org/download/) to start.
+You'll need [Composer](http://getcomposer.org/download/) to start.
 
     $ composer.phar install
 
