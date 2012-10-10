@@ -1,5 +1,5 @@
 Basic usage
-=============
+===========
 
 First of all please be sure satisfying requirements described in README.md
 You'll need [Composer](http://getcomposer.org/download/) to start.
@@ -8,12 +8,15 @@ You'll need [Composer](http://getcomposer.org/download/) to start.
 
 This will create directory vendor with some stuff inside. In your application write
 
-    require "cache/vendor/autoload.php";
-    $memcache = new Memcache();
-    $memcache->connect("10.0.0.104", 11211);
-    $cache = new Cache\Drivers\Memcache($memcache);
-    $cache->save($someData, $someKey, $tagsList, $lifeTime);
-    var_dump($cache->load($someKey));
+```php
+require "cache/vendor/autoload.php";
+$memcache = new Memcache();
+$memcache->addServer('10.0.0.1', 11211);
+$memcache->addServer('10.0.0.2', 11211);
+$cache = new Cache\Drivers\Memcache($memcache);
+$cache->save($someData, $someKey, $tagsList, $lifeTime);
+var_dump($cache->load($someKey));
+```
 
 List of currently available drivers you can find in directory src/Cache/Drivers/.
 
