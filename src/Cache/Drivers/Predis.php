@@ -215,7 +215,7 @@ class Predis extends MaxLifetime implements DriverInterface
 
         if (!empty($this->forceDeleteKeys)) {
             $toDelete = array_values(array_unique($this->forceDeleteKeys));
-            $cluster  = &$this->predis->getOptions()->cluster;
+            $cluster  = $this->predis->getOptions()->cluster;
 
             if ($cluster && is_object($cluster) && ($cluster instanceof PredisCluster)) {
                 $connections  = array();
@@ -223,13 +223,13 @@ class Predis extends MaxLifetime implements DriverInterface
 
                 // Group keys by connections to which they related
                 foreach ($toDelete as $key) {
-                    $connection = &$cluster->getConnection(
+                    $connection = $cluster->getConnection(
                         $this->predis->createCommand('del', array($key))
                     );
                     $conName    = (string) $connection;
 
                     if (!array_key_exists($conName, $connections)) {
-                        $connections[$conName] = &$connection;
+                        $connections[$conName] = $connection;
                     }
 
                     if (!array_key_exists($conName, $keysToDelete)) {
