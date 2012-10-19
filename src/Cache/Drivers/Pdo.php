@@ -70,7 +70,7 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
     /**
      * The class constructor.
      *
-     * @param \PDO $dbh
+     * @param \PDO   $dbh
      * @param string $prefix
      */
     public function __construct(\PDO $dbh, $prefix = 'cache_')
@@ -84,7 +84,7 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $id
+     * @param  string      $id
      * @return mixed|false Data on success, false on failure
      */
     public function load($id)
@@ -109,10 +109,10 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param mixed $data
-     * @param string $id
-     * @param array $tags
-     * @param integer|boolean $lifetime
+     * @param  mixed           $data
+     * @param  string          $id
+     * @param  array           $tags
+     * @param  integer|boolean $lifetime
      * @return boolean
      */
     public function save($data, $id, array $tags = array(), $lifetime = false)
@@ -172,7 +172,7 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $id
+     * @param  string  $id
      * @return boolean
      */
     public function remove($id)
@@ -203,7 +203,7 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param array $tags
+     * @param  array   $tags
      * @return boolean
      */
     public function removeByTags(array $tags)
@@ -235,8 +235,8 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $id
-     * @param integer $extraLifetime
+     * @param  string  $id
+     * @param  integer $extraLifetime
      * @return boolean
      */
     public function touch($id, $extraLifetime)
@@ -297,7 +297,7 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
      * Validates cache identifier or a tag, throws an exception in
      * case of a problem.
      *
-     * @param string $id
+     * @param  string           $id
      * @throws \Cache\Exception
      */
     protected function validateIdentifier($id)
@@ -313,8 +313,8 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
     /**
      * Register a cache id with the given tag.
      *
-     * @param string $id
-     * @param string $tag
+     * @param  string           $id
+     * @param  string           $tag
      * @return boolean
      * @throws \Cache\Exception
      */
@@ -383,8 +383,8 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
     /**
      * Executes an SQL query.
      *
-     * @param string $sql
-     * @param array $params
+     * @param  string           $sql
+     * @param  array            $params
      * @throws \Cache\Exception
      */
     protected function executeQuery($sql, $params = array())
@@ -418,9 +418,9 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
     /**
      * Executes SQL and return result of fetch.
      *
-     * @param string $sql
-     * @param array $params
-     * @param integer $fetchStyle
+     * @param  string           $sql
+     * @param  array            $params
+     * @param  integer          $fetchStyle
      * @return array
      * @throws \Cache\Exception
      */
@@ -461,7 +461,7 @@ abstract class Pdo extends MaxLifetime implements DriverInterface
      * Returns quoted identifier (table name or field name).
      *
      * @abstract
-     * @param string $identifier
+     * @param  string $identifier
      * @return string
      */
     abstract protected function getQuotedIdentifier($identifier);

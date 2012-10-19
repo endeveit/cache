@@ -61,7 +61,7 @@ class Mongo implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $id
+     * @param  string      $id
      * @return mixed|false Data on success, false on failure
      */
     public function load($id)
@@ -84,10 +84,10 @@ class Mongo implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param mixed $data
-     * @param string $id
-     * @param array $tags
-     * @param integer|boolean $lifetime
+     * @param  mixed           $data
+     * @param  string          $id
+     * @param  array           $tags
+     * @param  integer|boolean $lifetime
      * @return boolean
      */
     public function save($data, $id, array $tags = array(), $lifetime = false)
@@ -115,7 +115,7 @@ class Mongo implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $id
+     * @param  string  $id
      * @return boolean
      */
     public function remove($id)
@@ -126,7 +126,7 @@ class Mongo implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param array $tags
+     * @param  array   $tags
      * @return boolean
      */
     public function removeByTags(array $tags)
@@ -145,8 +145,8 @@ class Mongo implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $id
-     * @param integer $extraLifetime
+     * @param  string  $id
+     * @param  integer $extraLifetime
      * @return boolean
      */
     public function touch($id, $extraLifetime)
@@ -163,7 +163,7 @@ class Mongo implements DriverInterface
     /**
      * Returns object from collection by identifier.
      *
-     * @param string $id
+     * @param  string     $id
      * @return array|null
      */
     protected function getById($id)

@@ -25,7 +25,7 @@ abstract class MaxLifetime implements DriverInterface
     /**
      * Returns final lifetime not greater than self::MAX_LIFETIME.
      *
-     * @param boolean|integer $lifetime
+     * @param  boolean|integer $lifetime
      * @return integer
      */
     protected function getFinalLifetime($lifetime = false)
@@ -41,6 +41,5 @@ abstract class MaxLifetime implements DriverInterface
 
         return $lifetime;
     }
-
 
 }

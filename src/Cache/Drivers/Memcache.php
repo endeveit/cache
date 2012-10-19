@@ -42,7 +42,7 @@ class Memcache implements DriverInterface
      * If $compress provided, the items will be stored compressed.
      *
      * @param \Memcache $memcache
-     * @param boolean $compress
+     * @param boolean   $compress
      */
     public function __construct(\Memcache $memcache, $compress = false)
     {
@@ -56,7 +56,7 @@ class Memcache implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $id
+     * @param  string      $id
      * @return mixed|false Data on success, false on failure
      */
     public function load($id)
@@ -73,10 +73,10 @@ class Memcache implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param mixed $data
-     * @param string $id
-     * @param array $tags
-     * @param integer|boolean $lifetime
+     * @param  mixed           $data
+     * @param  string          $id
+     * @param  array           $tags
+     * @param  integer|boolean $lifetime
      * @return boolean
      */
     public function save($data, $id, array $tags = array(), $lifetime = false)
@@ -98,7 +98,7 @@ class Memcache implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $id
+     * @param  string  $id
      * @return boolean
      */
     public function remove($id)
@@ -109,7 +109,7 @@ class Memcache implements DriverInterface
     /**
      * Remove an items by cache tags.
      *
-     * @param array $tags
+     * @param  array   $tags
      * @return boolean
      */
     public function removeByTags(array $tags)
@@ -123,8 +123,8 @@ class Memcache implements DriverInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $id
-     * @param integer $extraLifetime
+     * @param  string  $id
+     * @param  integer $extraLifetime
      * @return boolean
      */
     public function touch($id, $extraLifetime)
@@ -160,7 +160,7 @@ class Memcache implements DriverInterface
      * Validates cache identifier or a tag, throws an exception in
      * case of a problem.
      *
-     * @param string $id
+     * @param  string           $id
      * @throws \Cache\Exception
      */
     protected function validateIdentifier($id)
@@ -176,7 +176,7 @@ class Memcache implements DriverInterface
      * Save the tags for identifier.
      *
      * @param string $id
-     * @param array $tags
+     * @param array  $tags
      */
     protected function saveTagsForId($id, array $tags)
     {
@@ -197,7 +197,7 @@ class Memcache implements DriverInterface
     /**
      * Removes identifier from the tags.
      *
-     * @param array $tags
+     * @param array  $tags
      * @param string $id
      */
     protected function removeIdFromTags(array $tags, $id)
@@ -229,7 +229,7 @@ class Memcache implements DriverInterface
     /**
      * Return an array of stored cache ids which match given tags.
      *
-     * @param array $tags
+     * @param  array $tags
      * @return array
      */
     protected function getIdsMatchingAnyTags($tags = array())
@@ -246,7 +246,7 @@ class Memcache implements DriverInterface
     /**
      * Returns list of identifiers for tag.
      *
-     * @param string $tag
+     * @param  string $tag
      * @return array
      */
     protected function getIdentifiersForTag($tag)
@@ -263,7 +263,7 @@ class Memcache implements DriverInterface
     /**
      * Returns identifier for tag.
      *
-     * @param string $tag
+     * @param  string $tag
      * @return string
      */
     protected function getIdentifierForTag($tag)

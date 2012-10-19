@@ -72,7 +72,7 @@ class MySQL extends Pdo
     /**
      * {@inheritdoc}
      *
-     * @param string $identifier
+     * @param  string $identifier
      * @return string
      */
     protected function getQuotedIdentifier($identifier)

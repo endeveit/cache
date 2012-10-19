@@ -18,7 +18,7 @@ interface Driver
      * Returns an item.
      *
      * @abstract
-     * @param string $id
+     * @param  string      $id
      * @return mixed|false Data on success, false on failure
      */
     public function load($id);
@@ -27,10 +27,10 @@ interface Driver
      * Store an item.
      *
      * @abstract
-     * @param mixed $data
-     * @param string $id
-     * @param array $tags
-     * @param integer|boolean $lifetime
+     * @param  mixed           $data
+     * @param  string          $id
+     * @param  array           $tags
+     * @param  integer|boolean $lifetime
      * @return boolean
      */
     public function save($data, $id, array $tags = array(), $lifetime = false);
@@ -39,7 +39,7 @@ interface Driver
      * Remove an item.
      *
      * @abstract
-     * @param string $id
+     * @param  string  $id
      * @return boolean
      */
     public function remove($id);
@@ -48,7 +48,7 @@ interface Driver
      * Remove an items by cache tags.
      *
      * @abstract
-     * @param array $tags
+     * @param  array   $tags
      * @return boolean
      */
     public function removeByTags(array $tags);
@@ -57,8 +57,8 @@ interface Driver
      * Increases lifetime of item.
      *
      * @abstract
-     * @param string $id
-     * @param integer $extraLifetime
+     * @param  string  $id
+     * @param  integer $extraLifetime
      * @return boolean
      */
     public function touch($id, $extraLifetime);

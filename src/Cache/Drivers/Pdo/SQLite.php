@@ -20,7 +20,7 @@ class SQLite extends Pdo
     /**
      * {@inheritdoc}
      *
-     * @param \PDO $dbh
+     * @param \PDO   $dbh
      * @param string $prefix
      */
     public function __construct(\PDO $dbh, $prefix = 'cache_')
@@ -104,7 +104,7 @@ class SQLite extends Pdo
     /**
      * {@inheritdoc}
      *
-     * @param string $identifier
+     * @param  string $identifier
      * @return string
      */
     protected function getQuotedIdentifier($identifier)
