@@ -157,6 +157,30 @@ class Memcache implements DriverInterface
     }
 
     /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function increment($id, $value = 1)
+    {
+        return $this->memcache->increment($id, $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function decrement($id, $value = 1)
+    {
+        return $this->memcache->decrement($id, $value);
+    }
+
+    /**
      * Validates cache identifier or a tag, throws an exception in
      * case of a problem.
      *

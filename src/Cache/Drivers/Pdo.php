@@ -8,14 +8,13 @@
  */
 namespace Cache\Drivers;
 
-use Cache\Abstractions\MaxLifetime;
+use Cache\Abstractions\Common;
 use Cache\Exception;
-use Cache\Interfaces\Driver as DriverInterface;
 
 /**
  * Driver that stores data in relational database and uses PDO to work with it.
  */
-abstract class Pdo extends MaxLifetime implements DriverInterface
+abstract class Pdo extends Common
 {
 
     /**

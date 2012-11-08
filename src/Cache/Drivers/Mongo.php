@@ -8,12 +8,12 @@
  */
 namespace Cache\Drivers;
 
-use Cache\Interfaces\Driver as DriverInterface;
+use Cache\Abstractions\Common;
 
 /**
  * Driver that stores data in MongoDB.
  */
-class Mongo implements DriverInterface
+class Mongo extends Common
 {
 
     /**

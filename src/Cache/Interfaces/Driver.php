@@ -63,4 +63,26 @@ interface Driver
      */
     public function touch($id, $extraLifetime);
 
+    /**
+     * Increases a value.
+     * Returns item's new value on success or false on failure.
+     *
+     * @abstract
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function increment($id, $value = 1);
+
+    /**
+     * Decreases a value.
+     * Returns item's new value on success or false on failure.
+     *
+     * @abstract
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function decrement($id, $value = 1);
+
 }

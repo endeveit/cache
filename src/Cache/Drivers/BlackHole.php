@@ -75,4 +75,28 @@ class BlackHole implements DriverInterface
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function increment($id, $value = 1)
+    {
+        return intval($value);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function decrement($id, $value = 1)
+    {
+        return -intval($value);
+    }
+
 }

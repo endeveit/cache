@@ -8,8 +8,7 @@
  */
 namespace Cache\Drivers;
 
-use Cache\Abstractions\MaxLifetime;
-use Cache\Interfaces\Driver as DriverInterface;
+use Cache\Abstractions\Common;
 use Predis\Client;
 use Predis\Network\PredisCluster;
 
@@ -17,7 +16,7 @@ use Predis\Network\PredisCluster;
  * Driver that stores data in Redis and uses Predis library
  * to work with it.
  */
-class Predis extends MaxLifetime implements DriverInterface
+class Predis extends Common
 {
 
     /**
@@ -277,6 +276,30 @@ class Predis extends MaxLifetime implements DriverInterface
         }
 
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function increment($id, $value = 1)
+    {
+        return $this->predis->incrby($id, $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function decrement($id, $value = 1)
+    {
+        return $this->predis->decrby($id, $value);
     }
 
     /**
