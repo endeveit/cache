@@ -99,4 +99,15 @@ class BlackHole implements DriverInterface
         return -intval($value);
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @return boolean
+     */
+    public function contains($id)
+    {
+        return false;
+    }
+
 }

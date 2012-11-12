@@ -85,4 +85,13 @@ interface Driver
      */
     public function decrement($id, $value = 1);
 
+    /**
+     * Test if an entry exists in the cache.
+     *
+     * @abstract
+     * @param  string  $id
+     * @return boolean
+     */
+    public function contains($id);
+
 }

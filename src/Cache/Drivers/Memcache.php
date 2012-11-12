@@ -8,8 +8,8 @@
  */
 namespace Cache\Drivers;
 
+use Cache\Abstractions\Common;
 use Cache\Exception;
-use Cache\Interfaces\Driver as DriverInterface;
 
 /**
  * Driver that stores data in Memcached and uses \Memcache.
@@ -17,7 +17,7 @@ use Cache\Interfaces\Driver as DriverInterface;
  *
  * @link https://github.com/bigwhoop/taggable-zend-memcached-backend
  */
-class Memcache implements DriverInterface
+class Memcache extends Common
 {
 
     const TAG_SEPARATOR = '|';

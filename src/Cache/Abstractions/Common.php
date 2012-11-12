@@ -55,6 +55,17 @@ abstract class Common implements DriverInterface
     }
 
     /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @return boolean
+     */
+    public function contains($id)
+    {
+        return (false !== $this->load($id)) ? true : false;
+    }
+
+    /**
      * Returns final lifetime not greater than self::MAX_LIFETIME.
      *
      * @param  boolean|integer $lifetime
