@@ -10,7 +10,7 @@ namespace Cache\Drivers;
 
 use Cache\Abstractions\Common;
 use Predis\Client;
-use Predis\Network\PredisCluster;
+use Predis\Connection\PredisCluster;
 
 /**
  * Driver that stores data in Redis and uses Predis library
