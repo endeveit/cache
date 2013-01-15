@@ -74,15 +74,7 @@ class Predis extends Common
      */
     public function load($id)
     {
-        $result = @$this->predis->hgetall($id);
-
-        if (is_array($result) && !empty($result['data'])) {
-            $result = unserialize($result['data']);
-        } else {
-            $result = false;
-        }
-
-        return $result;
+        return @unserialize($this->predis->hget($id, 'data'));
     }
 
     /**

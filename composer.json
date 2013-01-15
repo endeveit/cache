@@ -25,7 +25,7 @@
     ],
     "require": {
         "php": ">=5.3",
-        "predis/predis": "<0.8"
+        "predis/predis": "0.8.x"
     },
     "autoload": {
         "psr-0": { "Cache": "src/" }
