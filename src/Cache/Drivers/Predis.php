@@ -74,7 +74,13 @@ class Predis extends Common
      */
     public function load($id)
     {
-        return @unserialize($this->predis->hget($id, 'data'));
+        $result = $this->predis->hget($id, 'data');
+
+        if (!empty($result) && strlen($result) > 1) {
+            return @unserialize($result);
+        }
+
+        return false;
     }
 
     /**
@@ -89,8 +95,8 @@ class Predis extends Common
     public function save($data, $id, array $tags = array(), $lifetime = false)
     {
         // Store the data in redis hash «data» and «tags» fields
-        $r0 = $this->predis->hset($id, 'data', serialize($data));
-        $r1 = $this->predis->hset($id, 'tags', serialize($tags));
+        $this->predis->hset($id, 'data', serialize($data));
+        $this->predis->hset($id, 'tags', serialize($tags));
 
         $lifetime = $this->getFinalLifetime($lifetime);
         if ($lifetime > 0) {
@@ -110,7 +116,7 @@ class Predis extends Common
             }
         }
 
-        return $r0 && $r1;
+        return true;
     }
 
     /**
