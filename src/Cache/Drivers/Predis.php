@@ -10,7 +10,7 @@ namespace Cache\Drivers;
 
 use Cache\Abstractions\Common;
 use Predis\Client;
-use Predis\Connection\PredisCluster;
+use Predis\Pipeline\PipelineContext;
 
 /**
  * Driver that stores data in Redis and uses Predis library
@@ -25,29 +25,6 @@ class Predis extends Common
      * @var \Predis\Client
      */
     protected $predis = null;
-
-    /**
-     * Used when deleting entries by keys.
-     * If false don't delete keys immediately, instead store
-     * the keys and then delete them in a single request.
-     *
-     * @var boolean
-     */
-    protected $forceDelete = true;
-
-    /**
-     * The keys that would be deleted in a single request.
-     *
-     * @var array
-     */
-    protected $forceDeleteKeys = array();
-
-    /**
-     * The keys that would be deleted from tags.
-     *
-     * @var array
-     */
-    protected $forceDeleteSrem = array();
 
     /**
      * Prefix for entries that stores tags.
@@ -76,11 +53,13 @@ class Predis extends Common
     {
         $result = $this->predis->hget($id, 'data');
 
-        if (!empty($result) && strlen($result) > 1) {
-            return @unserialize($result);
+        if (is_string($result) && !empty($result) && strlen($result) > 1) {
+            $result = unserialize($result);
+        } else {
+            $result = false;
         }
 
-        return false;
+        return $result;
     }
 
     /**
@@ -94,15 +73,17 @@ class Predis extends Common
      */
     public function save($data, $id, array $tags = array(), $lifetime = false)
     {
+        $pipe = $this->predis->pipeline();
+
         // Store the data in redis hash «data» and «tags» fields
-        $this->predis->hset($id, 'data', serialize($data));
-        $this->predis->hset($id, 'tags', serialize($tags));
+        $pipe->hset($id, 'data', serialize($data));
+        $pipe->hset($id, 'tags', serialize($tags));
 
         $lifetime = $this->getFinalLifetime($lifetime);
         if ($lifetime > 0) {
-            $this->predis->expire($id, $lifetime);
+            $pipe->expire($id, $lifetime);
         } else {
-            $this->predis->expire($id, self::MAX_LIFETIME);
+            $pipe->expire($id, self::MAX_LIFETIME);
         }
 
         // Store the tags
@@ -111,10 +92,12 @@ class Predis extends Common
 
             foreach ($tags as $tag) {
                 $tag = $this->getTagWithPrefix($tag);
-                $this->predis->sadd($tag, $id);
-                $this->predis->expire($tag, self::MAX_LIFETIME);
+                $pipe->sadd($tag, $id);
+                $pipe->expire($tag, self::MAX_LIFETIME);
             }
         }
+
+        $pipe->execute();
 
         return true;
     }
@@ -122,51 +105,54 @@ class Predis extends Common
     /**
      * {@inheritdoc}
      *
-     * @param  string  $id
+     * @param  string          $id
+     * @param  PipelineContext $pipe
      * @return boolean
      */
-    public function remove($id)
+    public function remove($id, PipelineContext $pipe = null)
     {
-        $result = @$this->predis->hgetall($id);
+        // When calling method from removeByTags, don't execute pipeline instantly
+        $instantExecute = false;
 
-        if (is_array($result) && !empty($result)) {
-            // Remove the identifier from related tags
-            $tags = (!empty($result['tags'])
-                ? unserialize($result['tags'])
-                : array());
+        if (null === $pipe) {
+            $pipe           = $this->predis->pipeline();
+            $instantExecute = true;
+        }
 
-            if (!empty($tags) && is_array($tags)) {
-                $tags = array_unique($tags);
-                foreach ($tags as $tag) {
-                    $tag = $this->getTagWithPrefix($tag);
+        $tags = $pipe->getClient()->hget($id, 'tags');
 
-                    // Check if identifier in tags set
-                    if ($this->predis->sismember($tag, $id)) {
-                        // Remove the identifier from the set
-                        if (!$this->forceDelete) {
-                            if (!array_key_exists($tag, $this->forceDeleteSrem)) {
-                                $this->forceDeleteSrem[$tag] = array();
-                            }
+        if (!empty($tags)) {
+            $tags = trim($tags);
 
-                            $this->forceDeleteSrem[$tag][] = $id;
-                        } else {
-                            $this->predis->srem($tag, $id);
-                        }
-                    }
+            if (0 === strpos($tags, 'a:')) {
+                $tags = unserialize($tags);
+            } else {
+                $tags = (array) $tags;
+            }
+        } else {
+            $tags = array();
+        }
 
-                    // If tag becomes empty, remove it
-                    if ($this->forceDelete && 0 == $this->predis->scard($tag)) {
-                        $this->predis->del($tag);
-                    }
-                }
+        // Remove the identifier from related tags
+        foreach ($tags as $tag) {
+            $tag = $this->getTagWithPrefix($tag);
+
+            // If identifier in tags set remove it from the set
+            if ($this->predis->sismember($tag, $id)) {
+                $pipe->srem($tag, $id);
+            }
+
+            // If tag becomes empty, remove it
+            if (0 == $this->predis->scard($tag)) {
+                $pipe->del($tag);
             }
         }
 
         // Remove the identifier
-        if (!$this->forceDelete) {
-            $this->forceDeleteKeys[] = $id;
-        } else {
-            $this->predis->del($id);
+        $pipe->del($id);
+
+        if ($instantExecute) {
+            $pipe->execute();
         }
 
         return true;
@@ -180,78 +166,26 @@ class Predis extends Common
      */
     public function removeByTags(array $tags)
     {
-        $this->forceDelete     = false;
-        $this->forceDeleteKeys = array();
-        $this->forceDeleteSrem = array();
+        $pipe = $this->predis->pipeline();
 
-        $tags = array_unique($tags);
-
-        foreach ($tags as $tag) {
+        foreach (array_unique($tags) as $tag) {
             $keys = $this->predis->smembers($this->getTagWithPrefix($tag));
+            if (is_array($keys)) {
+                $keys = new \ArrayIterator($keys);
+            }
 
             // Because with Predis we have a great chance to work in cluster
             // we must remove entries one by one
-            if (is_array($keys)) {
-                $keys = array_unique($keys);
+            if (is_object($keys) && ($keys instanceof \Iterator)) {
                 foreach ($keys as $key) {
-                    $this->remove($key);
+                    $this->remove($key, $pipe);
                 }
-            }
+            };
 
-            $this->remove($tag);
+            $this->remove($tag, $pipe);
         }
 
-        if (!empty($this->forceDeleteSrem)) {
-            foreach ($this->forceDeleteSrem as $tag => $identifiers) {
-                $this->predis->srem($tag, $identifiers);
-                if (0 == $this->predis->scard($tag)) {
-                    $this->forceDeleteKeys[] = $tag;
-                }
-            }
-        }
-
-        if (!empty($this->forceDeleteKeys)) {
-            $toDelete = array_values(array_unique($this->forceDeleteKeys));
-            $cluster  = $this->predis->getOptions()->cluster;
-
-            if ($cluster && is_object($cluster) && ($cluster instanceof PredisCluster)) {
-                $connections  = array();
-                $keysToDelete = array();
-
-                // Group keys by connections to which they related
-                foreach ($toDelete as $key) {
-                    $connection = $cluster->getConnection(
-                        $this->predis->createCommand('del', array($key))
-                    );
-                    $conName    = (string) $connection;
-
-                    if (!array_key_exists($conName, $connections)) {
-                        $connections[$conName] = $connection;
-                    }
-
-                    if (!array_key_exists($conName, $keysToDelete)) {
-                        $keysToDelete[$conName] = array();
-                    }
-
-                    $keysToDelete[$conName][] = $key;
-                }
-
-                // Remove the keys related to each connection
-                foreach ($keysToDelete as $conName => $values) {
-                    if (!empty($values)) {
-                        $connections[$conName]->writeCommand(
-                            $this->predis->createCommand('del', $values)
-                        );
-                    }
-                }
-            } else {
-                $this->predis->del($toDelete);
-            }
-        }
-
-        $this->forceDeleteSrem = array();
-        $this->forceDeleteKeys = array();
-        $this->forceDelete     = true;
+        $pipe->execute();
 
         return true;
     }
