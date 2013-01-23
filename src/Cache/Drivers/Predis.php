@@ -135,17 +135,7 @@ class Predis extends Common
 
         // Remove the identifier from related tags
         foreach ($tags as $tag) {
-            $tag = $this->getTagWithPrefix($tag);
-
-            // If identifier in tags set remove it from the set
-            if ($this->predis->sismember($tag, $id)) {
-                $pipe->srem($tag, $id);
-            }
-
-            // If tag becomes empty, remove it
-            if (0 == $this->predis->scard($tag)) {
-                $pipe->del($tag);
-            }
+            $pipe->srem($this->getTagWithPrefix($tag), $id);
         }
 
         // Remove the identifier
