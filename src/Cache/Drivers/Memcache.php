@@ -73,6 +73,27 @@ class Memcache extends Common
     /**
      * {@inheritdoc}
      *
+     * @param  array $identifiers
+     * @return array
+     */
+    public function loadMany(array $identifiers)
+    {
+        $result = array();
+
+        foreach ($this->memcache->get($identifiers, $this->flag) as $identifier => $row) {
+            if (is_array($row) && isset($row[0])) {
+                $result[$identifier] = $row[0];
+            }
+        }
+
+        $this->fillNotFoundKeys($result, $identifiers);
+
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
      * @param  mixed           $data
      * @param  string          $id
      * @param  array           $tags

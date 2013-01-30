@@ -66,19 +66,45 @@ class Mongo extends Common
      */
     public function load($id)
     {
-        $object = $this->getById($id);
+        $cursor = $this->collection->find(array('id' => $id));
 
-        if (null !== $object
-            && (empty($object['expires_at'])
-                || (!empty($object['expires_at'])
-                    && ($object['expires_at']->format('U') > time())
-                )
-            )
-        ) {
-            return unserialize($object['data']);
+        if ($cursor->count() > 0) {
+            $doc = $cursor->getNext();
+
+            if (empty($doc['expires_at'])
+                || (!empty($doc['expires_at']) && ($doc['expires_at']->sec > time()))) {
+                return unserialize($doc['data']);
+            }
         }
 
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  array $identifiers
+     * @return array
+     */
+    public function loadMany(array $identifiers)
+    {
+        $result = array();
+        $now    = time();
+        $cursor = $this->collection->find(array(
+            'id' => array('$in' => $identifiers)
+        ));
+
+        foreach ($cursor as $doc) {
+            if (empty($doc['expires_at'])
+                || (!empty($doc['expires_at']) && ($doc['expires_at']->sec > $now))) {
+
+                $result[$doc['id']] = unserialize($doc['data']);
+            }
+        }
+
+        $this->fillNotFoundKeys($result, $identifiers);
+
+        return $result;
     }
 
     /**
@@ -92,7 +118,6 @@ class Mongo extends Common
      */
     public function save($data, $id, array $tags = array(), $lifetime = false)
     {
-        $createdAt = new \DateTime();
         $expiresAt = false !== $lifetime
             ? new \DateTime()
             : null;
@@ -101,15 +126,17 @@ class Mongo extends Common
             'id'         => $id,
             'data'       => serialize($data),
             'tags'       => $tags,
-            'created_at' => $createdAt,
+            'created_at' => new \MongoDate(),
         );
 
         if (null !== $expiresAt) {
             $expiresAt->add(new \DateInterval('PT' . intval($lifetime) . 'S'));
-            $object['expires_at'] = $expiresAt;
+            $object['expires_at'] = new \MongoDate($expiresAt->format('U'));;
         }
 
-        return $this->collection->save($object);
+        $this->remove($id);
+
+        return $this->collection->insert($object);
     }
 
     /**
@@ -158,23 +185,6 @@ class Mongo extends Common
             array('id'   => $id),
             array('$set' => array('expires_at' => $expiresAt))
         );
-    }
-
-    /**
-     * Returns object from collection by identifier.
-     *
-     * @param  string     $id
-     * @return array|null
-     */
-    protected function getById($id)
-    {
-        $cursor = $this->collection->find(array('id' => $id));
-
-        if ($cursor->count() > 0) {
-            return $cursor->getNext();
-        }
-
-        return null;
     }
 
 }

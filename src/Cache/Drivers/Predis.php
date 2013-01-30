@@ -65,6 +65,32 @@ class Predis extends Common
     /**
      * {@inheritdoc}
      *
+     * @param  array $identifiers
+     * @return array
+     */
+    public function loadMany(array $identifiers)
+    {
+        $result = array();
+        $pipe   = $this->predis->pipeline();
+
+        foreach ($identifiers as $identifier) {
+            $pipe->hget($identifier, 'data');
+        }
+
+        foreach ($pipe->execute() as $key => $row) {
+            if (is_string($row) && !empty($row) && strlen($row) > 1) {
+                $result[$identifiers[$key]] = unserialize($row);
+            } else {
+                $result[$identifiers[$key]] = false;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
      * @param  mixed           $data
      * @param  string          $id
      * @param  array           $tags

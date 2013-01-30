@@ -24,6 +24,14 @@ interface Driver
     public function load($id);
 
     /**
+     * Returns many items at once.
+     *
+     * @param  array $identifiers
+     * @return array
+     */
+    public function loadMany(array $identifiers);
+
+    /**
      * Store an item.
      *
      * @abstract

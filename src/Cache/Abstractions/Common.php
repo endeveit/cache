@@ -102,4 +102,17 @@ abstract class Common implements DriverInterface
         return $value;
     }
 
+    /**
+     * Fills the not found keys with false in «loadMany» method.
+     *
+     * @param array $result
+     * @param array $identifiers
+     */
+    protected function fillNotFoundKeys(array &$result, array &$identifiers)
+    {
+        foreach (array_diff($identifiers, array_keys($result)) as $notExist) {
+            $result[$notExist] = false;
+        }
+    }
+
 }

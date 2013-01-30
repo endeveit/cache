@@ -30,6 +30,20 @@ class BlackHole implements DriverInterface
     /**
      * {@inheritdoc}
      *
+     * @param  array $identifiers
+     * @return array
+     */
+    public function loadMany(array $identifiers)
+    {
+        return array_combine(
+            $identifiers,
+            array_fill(0, count($identifiers), false)
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     *
      * @param  mixed           $data
      * @param  string          $id
      * @param  array           $tags

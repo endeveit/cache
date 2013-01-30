@@ -108,6 +108,39 @@ abstract class Pdo extends Common
     /**
      * {@inheritdoc}
      *
+     * @param  array $identifiers
+     * @return array
+     */
+    public function loadMany(array $identifiers)
+    {
+        $result = array();
+        $sql    = sprintf(
+            'SELECT %s, %s, %s FROM %s WHERE %s IN (%%s)',
+            $this->fields['id'],
+            $this->fields['data'],
+            $this->fields['expires_at'],
+            $this->tables['cache'],
+            $this->fields['id']
+        );
+
+        // Prepare placeholders
+        $sql = sprintf($sql, trim(str_repeat('?, ', count($identifiers)), ', '));
+        $now = time();
+
+        foreach ($this->fetchRows($sql, $identifiers) as $row) {
+            if ($row['expires_at'] == 0 || $row['expires_at'] > $now) {
+                $result[$row['id']] = unserialize($row['data']);
+            }
+        }
+
+        $this->fillNotFoundKeys($result, $identifiers);
+
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
      * @param  mixed           $data
      * @param  string          $id
      * @param  array           $tags
@@ -382,9 +415,9 @@ abstract class Pdo extends Common
     /**
      * Executes an SQL query.
      *
-     * @param  string           $sql
-     * @param  array            $params
-     * @throws \Cache\Exception
+     * @param  string                      $sql
+     * @param  array                       $params
+     * @throws \Cache\Exception|\Exception
      */
     protected function executeQuery($sql, $params = array())
     {
