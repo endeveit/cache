@@ -24,8 +24,10 @@
         }
     ],
     "require": {
-        "php": ">=5.3",
-        "predis/predis": "0.8.x"
+        "php": ">=5.3"
+    },
+    "suggest": {
+        "predis/predis": "Allow using Predis driver"
     },
     "autoload": {
         "psr-0": { "Cache": "src/" }
