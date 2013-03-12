@@ -61,7 +61,7 @@ class Memcache extends Common
      */
     public function load($id)
     {
-        $result = $this->memcache->get($id, $this->flag);
+        $result = $this->memcache->get($id, intval($this->flag));
 
         if (is_array($result) && isset($result[0])) {
             return $result[0];
@@ -80,7 +80,7 @@ class Memcache extends Common
     {
         $result = array();
 
-        foreach ($this->memcache->get($identifiers, $this->flag) as $identifier => $row) {
+        foreach ($this->memcache->get($identifiers, intval($this->flag)) as $identifier => $row) {
             if (is_array($row) && isset($row[0])) {
                 $result[$identifier] = $row[0];
             }
