@@ -137,6 +137,10 @@ class Predis extends Common
      */
     public function remove($id, PipelineContext $pipe = null)
     {
+        if ($this->identifierIsEmpty($id)) {
+            return true;
+        }
+
         // When calling method from removeByTags, don't execute pipeline instantly
         $instantExecute = false;
 

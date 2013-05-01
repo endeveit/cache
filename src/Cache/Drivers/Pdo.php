@@ -209,6 +209,10 @@ abstract class Pdo extends Common
      */
     public function remove($id)
     {
+        if ($this->identifierIsEmpty($id)) {
+            return true;
+        }
+
         $params = array($id);
 
         $this->executeQuery(

@@ -124,6 +124,10 @@ class Memcache extends Common
      */
     public function remove($id)
     {
+        if ($this->identifierIsEmpty($id)) {
+            return true;
+        }
+
         return $this->memcache->delete($id);
     }
 

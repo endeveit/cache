@@ -147,6 +147,10 @@ class Mongo extends Common
      */
     public function remove($id)
     {
+        if ($this->identifierIsEmpty($id)) {
+            return true;
+        }
+
         return $this->collection->remove(array('id' => $id));
     }
 

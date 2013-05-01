@@ -115,4 +115,15 @@ abstract class Common implements DriverInterface
         }
     }
 
+    /**
+     * Returns true if identifier is empty.
+     *
+     * @param  string  $id
+     * @return boolean
+     */
+    protected function identifierIsEmpty($id)
+    {
+        return empty($id) || 0 == strlen(trim($id));
+    }
+
 }
