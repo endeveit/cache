@@ -131,8 +131,8 @@ class Predis extends Common
     /**
      * {@inheritdoc}
      *
-     * @param  string          $id
-     * @param  PipelineContext $pipe
+     * @param  string                           $id
+     * @param  \Predis\Pipeline\PipelineContext $pipe
      * @return boolean
      */
     public function remove($id, PipelineContext $pipe = null)

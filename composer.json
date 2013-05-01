@@ -26,6 +26,9 @@
     "require": {
         "php": ">=5.3"
     },
+    "require-dev": {
+        "predis/predis": "0.8.x"
+    },
     "suggest": {
         "predis/predis": "Allow using Predis driver"
     },
