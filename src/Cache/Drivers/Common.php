@@ -8,12 +8,12 @@
  */
 namespace Cache\Drivers;
 
-use Cache\Interfaces\Driver as DriverInterface;
+use Cache\Interfaces\Driver;
 
 /**
  * Base class for drivers that use max lifetime limit.
  */
-abstract class Common implements DriverInterface
+abstract class Common implements Driver
 {
 
     /**
