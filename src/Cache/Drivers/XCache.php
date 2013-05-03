@@ -4,6 +4,7 @@
  * file that was distributed with this source code.
  *
  * @author Igor Borodikhin <gmail@iborodikhin.net>
+ * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
 namespace Cache\Drivers;
@@ -11,26 +12,21 @@ namespace Cache\Drivers;
 /**
  * Driver that stores data in XCache and uses php5-xcache extension.
  */
-
 class XCache extends Memcache
 {
-
-    const TAG_SEPARATOR = '|';
-    const TAG_NAME_FORMAT = '_tag_%s';
 
     /**
      * Class constructor to override parent __construct method
      */
     public function __construct()
     {
-
     }
 
     /**
      * {@inheritdoc}
      *
-     * @param string $id
-     * @return bool|mixed
+     * @param  string        $id
+     * @return boolean|mixed
      */
     public function load($id)
     {
@@ -46,16 +42,17 @@ class XCache extends Memcache
     /**
      * {@inheritdoc}
      *
-     * @param array $identifiers
+     * @param  array $identifiers
      * @return array
      */
     public function loadMany(array $identifiers)
     {
         $result = array();
 
-        foreach (xcache_get($identifiers, intval($this->flag)) as $identifier => $row) {
-            if (is_array($row) && isset($row[0])) {
-                $result[$identifier] = $row[0];
+        foreach ($identifiers as $identifier) {
+            $data = xcache_get($identifier);
+            if (is_array($data) && isset($data[0])) {
+                $result[$identifier] = $data[0];
             }
         }
 
@@ -67,11 +64,11 @@ class XCache extends Memcache
     /**
      * {@inheritdoc}
      *
-     * @param mixed $data
-     * @param string $id
-     * @param array $tags
-     * @param bool $lifetime
-     * @return bool
+     * @param  mixed   $data
+     * @param  string  $id
+     * @param  array   $tags
+     * @param  boolean $lifetime
+     * @return boolean
      */
     public function save($data, $id, array $tags = array(), $lifetime = false)
     {
@@ -91,8 +88,8 @@ class XCache extends Memcache
     /**
      * {@inheritdoc}
      *
-     * @param string $id
-     * @return bool
+     * @param  string  $id
+     * @return boolean
      */
     public function remove($id)
     {
@@ -106,9 +103,9 @@ class XCache extends Memcache
     /**
      * {@inheritdoc}
      *
-     * @param string $id
-     * @param int $extraLifetime
-     * @return bool
+     * @param  string  $id
+     * @param  integer $extraLifetime
+     * @return boolean
      */
     public function touch($id, $extraLifetime)
     {
@@ -137,9 +134,9 @@ class XCache extends Memcache
     /**
      * {@inheritdoc}
      *
-     * @param string $id
-     * @param int $value
-     * @return int
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
      */
     public function increment($id, $value = 1)
     {
@@ -149,9 +146,9 @@ class XCache extends Memcache
     /**
      * {@inheritdoc}
      *
-     * @param string $id
-     * @param int $value
-     * @return int
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
      */
     public function decrement($id, $value = 1)
     {
