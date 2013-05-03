@@ -8,7 +8,6 @@
  */
 namespace Cache\Drivers;
 
-use Cache\Abstractions\Common;
 use Cache\Exception;
 
 /**
@@ -84,9 +83,9 @@ abstract class Pdo extends Common
      * {@inheritdoc}
      *
      * @param  string      $id
-     * @return mixed|false Data on success, false on failure
+     * @return mixed|false
      */
-    public function load($id)
+    protected function doLoad($id)
     {
         $sql = sprintf(
             'SELECT %s, %s FROM %s WHERE %s = ?',
@@ -111,7 +110,7 @@ abstract class Pdo extends Common
      * @param  array $identifiers
      * @return array
      */
-    public function loadMany(array $identifiers)
+    protected function doLoadMany(array $identifiers)
     {
         $result = array();
         $sql    = sprintf(
@@ -147,7 +146,7 @@ abstract class Pdo extends Common
      * @param  integer|boolean $lifetime
      * @return boolean
      */
-    public function save($data, $id, array $tags = array(), $lifetime = false)
+    protected function doSave($data, $id, array $tags = array(), $lifetime = false)
     {
         $this->validateIdentifier($id);
 
@@ -207,12 +206,8 @@ abstract class Pdo extends Common
      * @param  string  $id
      * @return boolean
      */
-    public function remove($id)
+    protected function doRemove($id)
     {
-        if ($this->identifierIsEmpty($id)) {
-            return true;
-        }
-
         $params = array($id);
 
         $this->executeQuery(
@@ -242,7 +237,7 @@ abstract class Pdo extends Common
      * @param  array   $tags
      * @return boolean
      */
-    public function removeByTags(array $tags)
+    protected function doRemoveByTags(array $tags)
     {
         $identifiers = $this->getIdsMatchingTags($tags);
 
@@ -252,7 +247,7 @@ abstract class Pdo extends Common
 
         try {
             foreach ($identifiers as $id) {
-                $this->remove($id);
+                $this->doRemove($id);
             }
 
             $this->dbh->commit();
@@ -275,7 +270,7 @@ abstract class Pdo extends Common
      * @param  integer $extraLifetime
      * @return boolean
      */
-    public function touch($id, $extraLifetime)
+    protected function doTouch($id, $extraLifetime)
     {
         $this->validateIdentifier($id);
 
@@ -488,15 +483,12 @@ abstract class Pdo extends Common
 
     /**
      * Builds the tables structure in database.
-     *
-     * @abstract
      */
     abstract public function buildStructure();
 
     /**
      * Returns quoted identifier (table name or field name).
      *
-     * @abstract
      * @param  string $identifier
      * @return string
      */

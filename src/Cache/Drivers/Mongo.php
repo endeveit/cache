@@ -8,8 +8,6 @@
  */
 namespace Cache\Drivers;
 
-use Cache\Abstractions\Common;
-
 /**
  * Driver that stores data in MongoDB.
  */
@@ -19,9 +17,9 @@ class Mongo extends Common
     /**
      * MongoDB object.
      *
-     * @var \MongoDB
+     * @var \MongoClient
      */
-    protected $db;
+    protected $client;
 
     /**
      * MongoDB collection object.
@@ -33,14 +31,14 @@ class Mongo extends Common
     /**
      * The class constructor.
      *
-     * @param \Mongo $con
-     * @param string $dbName
-     * @param string $collection
+     * @param \MongoClient $client
+     * @param string       $dbName
+     * @param string       $collection
      */
-    public function __construct(\Mongo $con, $dbName, $collection = 'cache')
+    public function __construct(\MongoClient $client, $dbName, $collection = 'cache')
     {
-        $this->db = $con->selectDB($dbName);
-        $this->collection = $this->db->selectCollection($collection);
+        $this->client = $client->selectDB($dbName);
+        $this->collection = $this->client->selectCollection($collection);
     }
 
     /**
@@ -62,9 +60,9 @@ class Mongo extends Common
      * {@inheritdoc}
      *
      * @param  string      $id
-     * @return mixed|false Data on success, false on failure
+     * @return mixed|false
      */
-    public function load($id)
+    protected function doLoad($id)
     {
         $cursor = $this->collection->find(array('id' => $id));
 
@@ -86,7 +84,7 @@ class Mongo extends Common
      * @param  array $identifiers
      * @return array
      */
-    public function loadMany(array $identifiers)
+    protected function doLoadMany(array $identifiers)
     {
         $result = array();
         $now    = time();
@@ -116,7 +114,7 @@ class Mongo extends Common
      * @param  integer|boolean $lifetime
      * @return boolean
      */
-    public function save($data, $id, array $tags = array(), $lifetime = false)
+    protected function doSave($data, $id, array $tags = array(), $lifetime = false)
     {
         $expiresAt = false !== $lifetime
             ? new \DateTime()
@@ -134,7 +132,7 @@ class Mongo extends Common
             $object['expires_at'] = new \MongoDate($expiresAt->format('U'));;
         }
 
-        $this->remove($id);
+        $this->doRemove($id);
 
         return $this->collection->insert($object);
     }
@@ -145,12 +143,8 @@ class Mongo extends Common
      * @param  string  $id
      * @return boolean
      */
-    public function remove($id)
+    protected function doRemove($id)
     {
-        if ($this->identifierIsEmpty($id)) {
-            return true;
-        }
-
         return $this->collection->remove(array('id' => $id));
     }
 
@@ -160,14 +154,14 @@ class Mongo extends Common
      * @param  array   $tags
      * @return boolean
      */
-    public function removeByTags(array $tags)
+    protected function doRemoveByTags(array $tags)
     {
         $cursor = $this->collection->find(array(
             'tags' => array('$in' => $tags)
         ));
 
         while ($row = $cursor->getNext()) {
-            $this->remove($row['id']);
+            $this->doRemove($row['id']);
         }
 
         return true;
@@ -180,7 +174,7 @@ class Mongo extends Common
      * @param  integer $extraLifetime
      * @return boolean
      */
-    public function touch($id, $extraLifetime)
+    protected function doTouch($id, $extraLifetime)
     {
         $expiresAt = new \DateTime();
         $expiresAt->add(new \DateInterval('PT' . intval($extraLifetime) . 'S'));

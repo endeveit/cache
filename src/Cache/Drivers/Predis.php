@@ -8,7 +8,6 @@
  */
 namespace Cache\Drivers;
 
-use Cache\Abstractions\Common;
 use Predis\Client;
 use Predis\Pipeline\PipelineContext;
 
@@ -24,7 +23,7 @@ class Predis extends Common
      *
      * @var \Predis\Client
      */
-    protected $predis = null;
+    protected $client = null;
 
     /**
      * Prefix for entries that stores tags.
@@ -36,22 +35,46 @@ class Predis extends Common
     /**
      * The class constructor.
      *
-     * @param \Predis\Client $predis
+     * @param \Predis\Client $client
      */
-    public function __construct(Client $predis)
+    public function __construct(Client $client)
     {
-        $this->predis = $predis;
+        $this->client = $client;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function increment($id, $value = 1)
+    {
+        return $this->client->incrby($id, $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function decrement($id, $value = 1)
+    {
+        return $this->client->decrby($id, $value);
     }
 
     /**
      * {@inheritdoc}
      *
      * @param  string      $id
-     * @return mixed|false Data on success, false on failure
+     * @return mixed|false
      */
-    public function load($id)
+    protected function doLoad($id)
     {
-        $result = $this->predis->hget($id, 'data');
+        $result = $this->client->hget($id, 'data');
 
         if (is_string($result) && !empty($result) && strlen($result) > 1) {
             $result = unserialize($result);
@@ -68,10 +91,10 @@ class Predis extends Common
      * @param  array $identifiers
      * @return array
      */
-    public function loadMany(array $identifiers)
+    protected function doLoadMany(array $identifiers)
     {
         $result = array();
-        $pipe   = $this->predis->pipeline();
+        $pipe   = $this->client->pipeline();
 
         foreach ($identifiers as $identifier) {
             $pipe->hget($identifier, 'data');
@@ -97,9 +120,9 @@ class Predis extends Common
      * @param  integer|boolean $lifetime
      * @return boolean
      */
-    public function save($data, $id, array $tags = array(), $lifetime = false)
+    protected function doSave($data, $id, array $tags = array(), $lifetime = false)
     {
-        $pipe = $this->predis->pipeline();
+        $pipe = $this->client->pipeline();
 
         // Store the data in redis hash «data» and «tags» fields
         $pipe->hset($id, 'data', serialize($data));
@@ -135,17 +158,13 @@ class Predis extends Common
      * @param  \Predis\Pipeline\PipelineContext $pipe
      * @return boolean
      */
-    public function remove($id, PipelineContext $pipe = null)
+    protected function doRemove($id, PipelineContext $pipe = null)
     {
-        if ($this->identifierIsEmpty($id)) {
-            return true;
-        }
-
         // When calling method from removeByTags, don't execute pipeline instantly
         $instantExecute = false;
 
         if (null === $pipe) {
-            $pipe           = $this->predis->pipeline();
+            $pipe           = $this->client->pipeline();
             $instantExecute = true;
         }
 
@@ -184,12 +203,12 @@ class Predis extends Common
      * @param  array   $tags
      * @return boolean
      */
-    public function removeByTags(array $tags)
+    protected function doRemoveByTags(array $tags)
     {
-        $pipe = $this->predis->pipeline();
+        $pipe = $this->client->pipeline();
 
         foreach (array_unique($tags) as $tag) {
-            $keys = $this->predis->smembers($this->getTagWithPrefix($tag));
+            $keys = $this->client->smembers($this->getTagWithPrefix($tag));
             if (is_array($keys)) {
                 $keys = new \ArrayIterator($keys);
             }
@@ -202,7 +221,7 @@ class Predis extends Common
                 }
             };
 
-            $this->remove($tag, $pipe);
+            $this->doRemove($tag, $pipe);
         }
 
         $pipe->execute();
@@ -217,41 +236,17 @@ class Predis extends Common
      * @param  integer $extraLifetime
      * @return boolean
      */
-    public function touch($id, $extraLifetime)
+    protected function doTouch($id, $extraLifetime)
     {
-        $result = $this->predis->ttl($id);
+        $result = $this->client->ttl($id);
 
         if ($result && is_integer($result) && $result > 0) {
-            $this->predis->expire($id, $result + $extraLifetime);
+            $this->client->expire($id, $result + $extraLifetime);
 
             return true;
         }
 
         return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function increment($id, $value = 1)
-    {
-        return $this->predis->incrby($id, $value);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function decrement($id, $value = 1)
-    {
-        return $this->predis->decrby($id, $value);
     }
 
     /**

@@ -17,7 +17,6 @@ interface Driver
     /**
      * Returns an item.
      *
-     * @abstract
      * @param  string      $id
      * @return mixed|false Data on success, false on failure
      */
@@ -34,7 +33,6 @@ interface Driver
     /**
      * Store an item.
      *
-     * @abstract
      * @param  mixed           $data
      * @param  string          $id
      * @param  array           $tags
@@ -46,7 +44,6 @@ interface Driver
     /**
      * Remove an item.
      *
-     * @abstract
      * @param  string  $id
      * @return boolean
      */
@@ -55,7 +52,6 @@ interface Driver
     /**
      * Remove an items by cache tags.
      *
-     * @abstract
      * @param  array   $tags
      * @return boolean
      */
@@ -64,7 +60,6 @@ interface Driver
     /**
      * Increases lifetime of item.
      *
-     * @abstract
      * @param  string  $id
      * @param  integer $extraLifetime
      * @return boolean
@@ -75,7 +70,6 @@ interface Driver
      * Increases a value.
      * Returns item's new value on success or false on failure.
      *
-     * @abstract
      * @param  string  $id
      * @param  integer $value
      * @return integer
@@ -86,7 +80,6 @@ interface Driver
      * Decreases a value.
      * Returns item's new value on success or false on failure.
      *
-     * @abstract
      * @param  string  $id
      * @param  integer $value
      * @return integer
@@ -96,7 +89,6 @@ interface Driver
     /**
      * Test if an entry exists in the cache.
      *
-     * @abstract
      * @param  string  $id
      * @return boolean
      */

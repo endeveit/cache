@@ -25,10 +25,34 @@ class XCache extends Memcache
     /**
      * {@inheritdoc}
      *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function increment($id, $value = 1)
+    {
+        return xcache_inc($id, $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function decrement($id, $value = 1)
+    {
+        return xcache_dec($id, $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
      * @param  string        $id
      * @return boolean|mixed
      */
-    public function load($id)
+    protected function doLoad($id)
     {
         $result = xcache_get($id);
 
@@ -45,7 +69,7 @@ class XCache extends Memcache
      * @param  array $identifiers
      * @return array
      */
-    public function loadMany(array $identifiers)
+    protected function doLoadMany(array $identifiers)
     {
         $result = array();
 
@@ -70,7 +94,7 @@ class XCache extends Memcache
      * @param  boolean $lifetime
      * @return boolean
      */
-    public function save($data, $id, array $tags = array(), $lifetime = false)
+    protected function doSave($data, $id, array $tags = array(), $lifetime = false)
     {
         $this->validateIdentifier($id);
 
@@ -91,12 +115,8 @@ class XCache extends Memcache
      * @param  string  $id
      * @return boolean
      */
-    public function remove($id)
+    protected function doRemove($id)
     {
-        if ($this->identifierIsEmpty($id)) {
-            return true;
-        }
-
         return xcache_unset($id);
     }
 
@@ -107,7 +127,7 @@ class XCache extends Memcache
      * @param  integer $extraLifetime
      * @return boolean
      */
-    public function touch($id, $extraLifetime)
+    protected function doTouch($id, $extraLifetime)
     {
         $tmp = xcache_get($id);
 
@@ -129,30 +149,6 @@ class XCache extends Memcache
         }
 
         return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function increment($id, $value = 1)
-    {
-        return xcache_inc($id, $value);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function decrement($id, $value = 1)
-    {
-        return xcache_dec($id, $value);
     }
 
 }

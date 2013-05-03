@@ -8,7 +8,6 @@
  */
 namespace Cache\Drivers;
 
-use Cache\Abstractions\Common;
 use Cache\Exception;
 
 /**
@@ -20,7 +19,18 @@ use Cache\Exception;
 class Memcache extends Common
 {
 
+    /**
+     * Separator which concatenates tags.
+     *
+     * @const string
+     */
     const TAG_SEPARATOR = '|';
+
+    /**
+     * Format of the tag name.
+     *
+     * @const string
+     */
     const TAG_NAME_FORMAT = '_tag_%s';
 
     /**
@@ -28,7 +38,7 @@ class Memcache extends Common
      *
      * @var \Memcache
      */
-    protected $memcache;
+    protected $client;
 
     /**
      * Store the items compressed or not.
@@ -41,12 +51,12 @@ class Memcache extends Common
      * The class constructor.
      * If $compress provided, the items will be stored compressed.
      *
-     * @param \Memcache $memcache
+     * @param \Memcache $client
      * @param boolean   $compress
      */
-    public function __construct(\Memcache $memcache, $compress = false)
+    public function __construct(\Memcache $client, $compress = false)
     {
-        $this->memcache = $memcache;
+        $this->client = $client;
 
         if ($compress) {
             $this->flag = MEMCACHE_COMPRESSED;
@@ -56,12 +66,36 @@ class Memcache extends Common
     /**
      * {@inheritdoc}
      *
-     * @param  string      $id
-     * @return mixed|false Data on success, false on failure
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
      */
-    public function load($id)
+    public function increment($id, $value = 1)
     {
-        $result = $this->memcache->get($id, intval($this->flag));
+        return $this->client->increment($id, $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function decrement($id, $value = 1)
+    {
+        return $this->client->decrement($id, $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string      $id
+     * @return mixed|false
+     */
+    protected function doLoad($id)
+    {
+        $result = $this->client->get($id, intval($this->flag));
 
         if (is_array($result) && isset($result[0])) {
             return $result[0];
@@ -76,11 +110,11 @@ class Memcache extends Common
      * @param  array $identifiers
      * @return array
      */
-    public function loadMany(array $identifiers)
+    protected function doLoadMany(array $identifiers)
     {
         $result = array();
 
-        foreach ($this->memcache->get($identifiers, intval($this->flag)) as $identifier => $row) {
+        foreach ($this->client->get($identifiers, intval($this->flag)) as $identifier => $row) {
             if (is_array($row) && isset($row[0])) {
                 $result[$identifier] = $row[0];
             }
@@ -100,7 +134,7 @@ class Memcache extends Common
      * @param  integer|boolean $lifetime
      * @return boolean
      */
-    public function save($data, $id, array $tags = array(), $lifetime = false)
+    protected function doSave($data, $id, array $tags = array(), $lifetime = false)
     {
         $this->validateIdentifier($id);
 
@@ -108,7 +142,7 @@ class Memcache extends Common
             $this->saveTagsForId($id, $tags);
         }
 
-        return $this->memcache->set(
+        return $this->client->set(
             $id,
             array($data, time(), $lifetime),
             $this->flag,
@@ -122,13 +156,9 @@ class Memcache extends Common
      * @param  string  $id
      * @return boolean
      */
-    public function remove($id)
+    protected function doRemove($id)
     {
-        if ($this->identifierIsEmpty($id)) {
-            return true;
-        }
-
-        return $this->memcache->delete($id);
+        return $this->client->delete($id);
     }
 
     /**
@@ -137,7 +167,7 @@ class Memcache extends Common
      * @param  array   $tags
      * @return boolean
      */
-    public function removeByTags(array $tags)
+    protected function doRemoveByTags(array $tags)
     {
         foreach ($this->getIdsMatchingAnyTags($tags) as $entryId) {
             $this->remove($entryId);
@@ -152,9 +182,9 @@ class Memcache extends Common
      * @param  integer $extraLifetime
      * @return boolean
      */
-    public function touch($id, $extraLifetime)
+    protected function doTouch($id, $extraLifetime)
     {
-        $tmp = $this->_memcache->get($id);
+        $tmp = $this->client->get($id);
 
         if (is_array($tmp)) {
             list($data, $mtime, $lifetime) = $tmp;
@@ -169,40 +199,16 @@ class Memcache extends Common
             $data = array($data, time(), $newLT);
 
             // We try replace() first becase set() seems to be slower
-            $result = $this->memcache->replace($id, $data, $this->flag, $newLT);
+            $result = $this->client->replace($id, $data, $this->flag, $newLT);
 
             if (!$result) {
-                $result = $this->memcache->set($id, $data, $this->flag, $newLT);
+                $result = $this->client->set($id, $data, $this->flag, $newLT);
             }
 
             return $result;
         }
 
         return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function increment($id, $value = 1)
-    {
-        return $this->memcache->increment($id, $value);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function decrement($id, $value = 1)
-    {
-        return $this->memcache->decrement($id, $value);
     }
 
     /**
@@ -236,7 +242,7 @@ class Memcache extends Common
                 $idsInTag[] = $id;
 
                 $this->save(
-                    join(self::TAG_SEPARATOR, $idsInTag),
+                    implode(self::TAG_SEPARATOR, $idsInTag),
                     $this->getIdentifierForTag($tag)
                 );
             }
@@ -262,7 +268,7 @@ class Memcache extends Common
      * @param string $tag
      * @param string $id
      */
-    private function removeIdFromTag($tag, $id)
+    protected function removeIdFromTag($tag, $id)
     {
         $identifiers = $this->getIdentifiersForTag($tag);
         $indexOfId   = array_search($id, $identifiers);
@@ -270,7 +276,7 @@ class Memcache extends Common
         if ($indexOfId > -1) {
             unset($identifiers[$indexOfId]);
 
-            $tagValue = join(self::TAG_SEPARATOR, $identifiers);
+            $tagValue = implode(self::TAG_SEPARATOR, $identifiers);
             $this->save($tagValue, $this->getIdentifierForTag($tag));
         }
     }
