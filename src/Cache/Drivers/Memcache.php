@@ -48,15 +48,34 @@ class Memcache extends Common
     protected $flag = 0;
 
     /**
+     * Prefix for all identifiers.
+     *
+     * @var string
+     */
+    protected $prefix = '';
+
+    /**
      * The class constructor.
      * If $compress provided, the items will be stored compressed.
      *
-     * @param \Memcache $client
-     * @param boolean   $compress
+     * @param  \Memcache        $client
+     * @param  boolean          $compress
+     * @param  string           $prefix
+     * @throws \Cache\Exception
      */
-    public function __construct(\Memcache $client, $compress = false)
+    public function __construct(\Memcache $client, $compress = false, $prefix = '')
     {
         $this->client = $client;
+
+        if (!empty($prefix)) {
+            try {
+                $this->validateIdentifier($prefix);
+
+                $this->prefix = $prefix;
+            } catch (Exception $e) {
+                throw new Exception('Invalid prefix');
+            }
+        }
 
         if ($compress) {
             $this->flag = MEMCACHE_COMPRESSED;
@@ -72,7 +91,7 @@ class Memcache extends Common
      */
     public function increment($id, $value = 1)
     {
-        return $this->client->increment($id, $value);
+        return $this->client->increment($this->getPrefixedIdentifier($id), $value);
     }
 
     /**
@@ -84,7 +103,7 @@ class Memcache extends Common
      */
     public function decrement($id, $value = 1)
     {
-        return $this->client->decrement($id, $value);
+        return $this->client->decrement($this->getPrefixedIdentifier($id), $value);
     }
 
     /**
@@ -95,7 +114,7 @@ class Memcache extends Common
      */
     protected function doLoad($id)
     {
-        $result = $this->client->get($id, intval($this->flag));
+        $result = $this->client->get($this->getPrefixedIdentifier($id), intval($this->flag));
 
         if (is_array($result) && isset($result[0])) {
             return $result[0];
@@ -112,11 +131,12 @@ class Memcache extends Common
      */
     protected function doLoadMany(array $identifiers)
     {
-        $result = array();
+        $result   = array();
+        $prefixed = array_map(array($this, 'getPrefixedIdentifier'), $identifiers);
 
-        foreach ($this->client->get($identifiers, intval($this->flag)) as $identifier => $row) {
+        foreach ($this->client->get($prefixed, intval($this->flag)) as $identifier => $row) {
             if (is_array($row) && isset($row[0])) {
-                $result[$identifier] = $row[0];
+                $result[$this->getIdentifierWithoutPrefix($identifier)] = $row[0];
             }
         }
 
@@ -143,7 +163,7 @@ class Memcache extends Common
         }
 
         return $this->client->set(
-            $id,
+            $this->getPrefixedIdentifier($id),
             array($data, time(), $lifetime),
             $this->flag,
             (integer) $lifetime
@@ -158,7 +178,7 @@ class Memcache extends Common
      */
     protected function doRemove($id)
     {
-        return $this->client->delete($id);
+        return $this->client->delete($this->getPrefixedIdentifier($id));
     }
 
     /**
@@ -184,7 +204,7 @@ class Memcache extends Common
      */
     protected function doTouch($id, $extraLifetime)
     {
-        $tmp = $this->client->get($id);
+        $tmp = $this->client->get($this->getPrefixedIdentifier($id));
 
         if (is_array($tmp)) {
             list($data, $mtime, $lifetime) = $tmp;
@@ -199,10 +219,10 @@ class Memcache extends Common
             $data = array($data, time(), $newLT);
 
             // We try replace() first becase set() seems to be slower
-            $result = $this->client->replace($id, $data, $this->flag, $newLT);
+            $result = $this->client->replace($this->getPrefixedIdentifier($id), $data, $this->flag, $newLT);
 
             if (!$result) {
-                $result = $this->client->set($id, $data, $this->flag, $newLT);
+                $result = $this->client->set($this->getPrefixedIdentifier($id), $data, $this->flag, $newLT);
             }
 
             return $result;
@@ -323,7 +343,33 @@ class Memcache extends Common
      */
     protected function getIdentifierForTag($tag)
     {
-        return sprintf(self::TAG_NAME_FORMAT, $tag);
+        return $this->getPrefixedIdentifier(sprintf(self::TAG_NAME_FORMAT, $tag));
+    }
+
+    /**
+     * Returns prefixed identifier.
+     *
+     * @param  string $id
+     * @return string
+     */
+    protected function getPrefixedIdentifier($id)
+    {
+        return $this->prefix . $id;
+    }
+
+    /**
+     * Returns identifier without prefix.
+     *
+     * @param  string $id
+     * @return string
+     */
+    protected function getIdentifierWithoutPrefix($id)
+    {
+        if (!empty($this->prefix)) {
+            return substr($id, strlen($this->prefix));
+        }
+
+        return $id;
     }
 
 }

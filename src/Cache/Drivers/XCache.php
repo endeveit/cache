@@ -9,6 +9,8 @@
  */
 namespace Cache\Drivers;
 
+use Cache\Exception;
+
 /**
  * Driver that stores data in XCache and uses php5-xcache extension.
  */
@@ -17,9 +19,21 @@ class XCache extends Memcache
 
     /**
      * Class constructor to override parent __construct method
+     *
+     * @param  string           $prefix
+     * @throws \Cache\Exception
      */
-    public function __construct()
+    public function __construct($prefix = '')
     {
+        if (!empty($prefix)) {
+            try {
+                $this->validateIdentifier($prefix);
+
+                $this->prefix = $prefix;
+            } catch (Exception $e) {
+                throw new Exception('Invalid prefix');
+            }
+        }
     }
 
     /**
@@ -31,7 +45,7 @@ class XCache extends Memcache
      */
     public function increment($id, $value = 1)
     {
-        return xcache_inc($id, $value);
+        return xcache_inc($this->getPrefixedIdentifier($id), $value);
     }
 
     /**
@@ -43,7 +57,7 @@ class XCache extends Memcache
      */
     public function decrement($id, $value = 1)
     {
-        return xcache_dec($id, $value);
+        return xcache_dec($this->getPrefixedIdentifier($id), $value);
     }
 
     /**
@@ -54,7 +68,7 @@ class XCache extends Memcache
      */
     protected function doLoad($id)
     {
-        $result = xcache_get($id);
+        $result = xcache_get($this->getPrefixedIdentifier($id));
 
         if (is_array($result) && isset($result[0])) {
             return $result[0];
@@ -74,7 +88,7 @@ class XCache extends Memcache
         $result = array();
 
         foreach ($identifiers as $identifier) {
-            $data = xcache_get($identifier);
+            $data = xcache_get($this->getPrefixedIdentifier($identifier));
             if (is_array($data) && isset($data[0])) {
                 $result[$identifier] = $data[0];
             }
@@ -103,7 +117,7 @@ class XCache extends Memcache
         }
 
         return xcache_set(
-            $id,
+            $this->getPrefixedIdentifier($id),
             array($data, time(), $lifetime),
             (integer) $lifetime
         );
@@ -117,7 +131,7 @@ class XCache extends Memcache
      */
     protected function doRemove($id)
     {
-        return xcache_unset($id);
+        return xcache_unset($this->getPrefixedIdentifier($id));
     }
 
     /**
@@ -129,7 +143,7 @@ class XCache extends Memcache
      */
     protected function doTouch($id, $extraLifetime)
     {
-        $tmp = xcache_get($id);
+        $tmp = xcache_get($this->getPrefixedIdentifier($id));
 
         if (is_array($tmp)) {
             list($data, $mtime, $lifetime) = $tmp;
@@ -143,7 +157,7 @@ class XCache extends Memcache
 
             $data = array($data, time(), $newLT);
 
-            $result = xcache_set($id, $data, $this->flag, $newLT);
+            $result = xcache_set($this->getPrefixedIdentifier($id), $data, $this->flag, $newLT);
 
             return $result;
         }
