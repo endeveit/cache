@@ -94,4 +94,11 @@ interface Driver
      */
     public function contains($id);
 
+    /**
+     * Drops all items from cache.
+     *
+     * @return boolean
+     */
+    public function flush();
+
 }

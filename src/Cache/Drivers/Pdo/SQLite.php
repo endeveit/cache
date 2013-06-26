@@ -89,6 +89,18 @@ class SQLite extends Pdo
 
     /**
      * {@inheritdoc}
+     *
+     * @return boolean
+     */
+    protected function doFlush()
+    {
+        $this->executeQuery(sprintf('DELETE FROM %s', $this->tables['cache']));
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     protected function prepareIdentifiers()
     {

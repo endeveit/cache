@@ -232,6 +232,16 @@ class Memcache extends Common
     }
 
     /**
+     * {@inheritdoc}
+     *
+     * @return boolean
+     */
+    protected function doFlush()
+    {
+        return $this->client->flush();
+    }
+
+    /**
      * Validates cache identifier or a tag, throws an exception in
      * case of a problem.
      *

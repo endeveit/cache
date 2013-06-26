@@ -141,6 +141,16 @@ abstract class Common implements Driver
     }
 
     /**
+     * {@inheritdoc}
+     *
+     * @return boolean
+     */
+    public function flush()
+    {
+        return $this->doFlush();
+    }
+
+    /**
      * Returns final lifetime not greater than self::MAX_LIFETIME.
      *
      * @param  boolean|integer $lifetime
@@ -241,5 +251,12 @@ abstract class Common implements Driver
      * @return boolean
      */
     abstract protected function doTouch($id, $extraLifetime);
+
+    /**
+     * Drops all items from cache through selected driver.
+     *
+     * @return boolean
+     */
+    abstract protected function doFlush();
 
 }

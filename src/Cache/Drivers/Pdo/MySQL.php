@@ -72,6 +72,18 @@ class MySQL extends Pdo
     /**
      * {@inheritdoc}
      *
+     * @return boolean
+     */
+    protected function doFlush()
+    {
+        $this->executeQuery(sprintf('TRUNCATE TABLE %s', $this->tables['cache']));
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
      * @param  string $identifier
      * @return string
      */

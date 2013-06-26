@@ -124,4 +124,14 @@ class BlackHole implements DriverInterface
         return false;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @return boolean
+     */
+    public function flush()
+    {
+        return true;
+    }
+
 }

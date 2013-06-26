@@ -149,20 +149,37 @@ class XCache extends Memcache
             list($data, $mtime, $lifetime) = $tmp;
 
             // Calculate new lifetime
-            $newLT = $lifetime - (time() - $mtime) + $extraLifetime;
+            $newLifetime = $lifetime - (time() - $mtime) + $extraLifetime;
 
-            if ($newLT <= 0) {
+            if ($newLifetime <= 0) {
                 return false;
             }
 
-            $data = array($data, time(), $newLT);
-
-            $result = xcache_set($this->getPrefixedIdentifier($id), $data, $this->flag, $newLT);
+            $data   = array($data, time(), $newLifetime);
+            $result = xcache_set($this->getPrefixedIdentifier($id), $data, $this->flag, $newLifetime);
 
             return $result;
         }
 
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return boolean
+     */
+    protected function doFlush()
+    {
+        if (ini_get('xcache.admin.enable_auth')) {
+            throw new \BadMethodCallException(
+                'You must set "xcache.admin.enable_auth" to "Off" in your php.ini to flush cache items.'
+            );
+        }
+
+        xcache_clear_cache(XC_TYPE_VAR, 0);
+
+        return true;
     }
 
 }

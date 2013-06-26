@@ -250,6 +250,18 @@ class Predis extends Common
     }
 
     /**
+     * {@inheritdoc}
+     *
+     * @return boolean
+     */
+    protected function doFlush()
+    {
+        $this->client->flushdb();
+
+        return true;
+    }
+
+    /**
      * Returns the identifier for the tag.
      *
      * @param  string $tag

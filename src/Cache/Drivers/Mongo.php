@@ -185,4 +185,14 @@ class Mongo extends Common
         );
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @return boolean
+     */
+    protected function doFlush()
+    {
+        return $this->collection->remove(array());
+    }
+
 }
