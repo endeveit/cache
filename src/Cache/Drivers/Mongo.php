@@ -192,7 +192,13 @@ class Mongo extends Common
      */
     protected function doFlush()
     {
-        return $this->collection->remove(array());
+        $result = $this->collection->remove(array());
+
+        if (!empty($result) && empty($result['err'])) {
+            return true;
+        }
+
+        return false;
     }
 
 }
