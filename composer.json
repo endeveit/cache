@@ -31,6 +31,10 @@
         "predis/predis": "0.8.x"
     },
     "suggest": {
+        "ext-memcache": "Allow using Memcache driver",
+        "ext-mongo": "Allow using Mongo driver",
+        "ext-phpredis": "Allow using Redis driver",
+        "ext-xcache": "Allow using XCache driver",
         "predis/predis": "Allow using Predis driver"
     },
     "autoload": {

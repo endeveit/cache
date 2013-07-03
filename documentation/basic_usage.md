@@ -54,8 +54,13 @@ If empty array is given does nothing.
 touch($id, $extraLifetime)
 --------------------------
 
-Extends lifetime of item identified by $id addind $extraLifetime to it.
+Extends lifetime of item identified by $id adding $extraLifetime to it.
 Total lifetime cannot be more than 31 days.
+
+flush()
+-------------------------
+
+Drops all items from cache.
 
 
 Notes on caching backend drivers
