@@ -6,9 +6,9 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Abstracts\Common;
+use Endeveit\Cache\Abstracts\Common;
 
 /**
  * Driver that stores data in MongoDB.

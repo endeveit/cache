@@ -6,9 +6,9 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Abstracts\Redis as AbstractRedis;
+use Endeveit\Cache\Abstracts\Redis as AbstractRedis;
 use Predis\Client;
 use Predis\Pipeline\PipelineContext;
 

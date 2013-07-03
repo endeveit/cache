@@ -6,10 +6,10 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Abstracts\Common;
-use Cache\Exception;
+use Endeveit\Cache\Abstracts\Common;
+use Endeveit\Cache\Exception;
 
 /**
  * Driver that stores data in Memcached and uses \Memcache.
@@ -59,10 +59,10 @@ class Memcache extends Common
      * The class constructor.
      * If $compress provided, the items will be stored compressed.
      *
-     * @param  \Memcache        $client
-     * @param  boolean          $compress
-     * @param  string           $prefix
-     * @throws \Cache\Exception
+     * @param  \Memcache                 $client
+     * @param  boolean                   $compress
+     * @param  string                    $prefix
+     * @throws \Endeveit\Cache\Exception
      */
     public function __construct(\Memcache $client, $compress = false, $prefix = '')
     {
@@ -246,8 +246,8 @@ class Memcache extends Common
      * Validates cache identifier or a tag, throws an exception in
      * case of a problem.
      *
-     * @param  string           $id
-     * @throws \Cache\Exception
+     * @param  string                    $id
+     * @throws \Endeveit\Cache\Exception
      */
     protected function validateIdentifier($id)
     {

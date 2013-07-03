@@ -6,7 +6,7 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Abstracts;
+namespace Endeveit\Cache\Abstracts;
 
 /**
  * User: endeveit

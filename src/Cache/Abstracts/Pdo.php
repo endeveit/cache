@@ -6,9 +6,9 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Abstracts;
+namespace Endeveit\Cache\Abstracts;
 
-use Cache\Exception;
+use Endeveit\Cache\Exception;
 
 /**
  * Driver that stores data in relational database and uses PDO to work with it.
@@ -328,8 +328,8 @@ abstract class Pdo extends Common
      * Validates cache identifier or a tag, throws an exception in
      * case of a problem.
      *
-     * @param  string           $id
-     * @throws \Cache\Exception
+     * @param  string                    $id
+     * @throws \Endeveit\Cache\Exception
      */
     protected function validateIdentifier($id)
     {
@@ -344,10 +344,10 @@ abstract class Pdo extends Common
     /**
      * Register a cache id with the given tag.
      *
-     * @param  string           $id
-     * @param  string           $tag
+     * @param  string                    $id
+     * @param  string                    $tag
      * @return boolean
-     * @throws \Cache\Exception
+     * @throws \Endeveit\Cache\Exception
      */
     protected function registerTag($id, $tag)
     {
@@ -414,9 +414,9 @@ abstract class Pdo extends Common
     /**
      * Executes an SQL query.
      *
-     * @param  string                      $sql
-     * @param  array                       $params
-     * @throws \Cache\Exception|\Exception
+     * @param  string                               $sql
+     * @param  array                                $params
+     * @throws \Endeveit\Cache\Exception|\Exception
      */
     protected function executeQuery($sql, $params = array())
     {
@@ -449,11 +449,11 @@ abstract class Pdo extends Common
     /**
      * Executes SQL and return result of fetch.
      *
-     * @param  string           $sql
-     * @param  array            $params
-     * @param  integer          $fetchStyle
+     * @param  string                    $sql
+     * @param  array                     $params
+     * @param  integer                   $fetchStyle
      * @return array
-     * @throws \Cache\Exception
+     * @throws \Endeveit\Cache\Exception
      */
     protected function fetchRows($sql, $params = array(), $fetchStyle = \PDO::FETCH_ASSOC)
     {
@@ -469,7 +469,7 @@ abstract class Pdo extends Common
     /**
      * Throws exception when database error occurs.
      *
-     * @throws \Cache\Exception
+     * @throws \Endeveit\Cache\Exception
      */
     protected function throwException()
     {

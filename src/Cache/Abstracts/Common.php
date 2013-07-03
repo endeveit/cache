@@ -6,9 +6,9 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Abstracts;
+namespace Endeveit\Cache\Abstracts;
 
-use Cache\Interfaces\Driver;
+use Endeveit\Cache\Interfaces\Driver;
 
 /**
  * Base class for drivers that use max lifetime limit.

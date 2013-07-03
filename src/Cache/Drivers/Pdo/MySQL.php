@@ -6,10 +6,10 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers\Pdo;
+namespace Endeveit\Cache\Drivers\Pdo;
 
-use Cache\Abstracts\Pdo;
-use Cache\Exception;
+use Endeveit\Cache\Abstracts\Pdo;
+use Endeveit\Cache\Exception;
 
 /**
  * PDO MySQL cache driver.

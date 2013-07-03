@@ -13,7 +13,7 @@ require "cache/vendor/autoload.php";
 $memcache = new Memcache();
 $memcache->addServer('10.0.0.1', 11211);
 $memcache->addServer('10.0.0.2', 11211);
-$cache = new Cache\Drivers\Memcache($memcache);
+$cache = new Endeveit\Cache\Drivers\Memcache($memcache);
 $cache->save($someData, $someKey, $tagsList, $lifeTime);
 var_dump($cache->load($someKey));
 ```

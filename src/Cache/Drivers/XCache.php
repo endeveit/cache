@@ -7,9 +7,9 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Exception;
+use Endeveit\Cache\Exception;
 
 /**
  * Driver that stores data in XCache and uses php5-xcache extension.
@@ -20,8 +20,8 @@ class XCache extends Memcache
     /**
      * Class constructor to override parent __construct method
      *
-     * @param  string           $prefix
-     * @throws \Cache\Exception
+     * @param  string                    $prefix
+     * @throws \Endeveit\Cache\Exception
      */
     public function __construct($prefix = '')
     {

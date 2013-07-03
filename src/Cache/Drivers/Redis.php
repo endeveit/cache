@@ -6,10 +6,10 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Abstracts\Redis as AbstractRedis;
-use Cache\Exception;
+use Endeveit\Cache\Abstracts\Redis as AbstractRedis;
+use Endeveit\Cache\Exception;
 
 /**
  * Driver that stores data in Redis and uses \Redis extension
@@ -61,11 +61,11 @@ class Redis extends AbstractRedis
     /**
      * Adds new connection to connections pool.
      *
-     * @param  string           $host
-     * @param  integer          $port
-     * @param  float            $timeout
-     * @param  integer          $weight
-     * @throws \Cache\Exception
+     * @param  string                    $host
+     * @param  integer                   $port
+     * @param  float                     $timeout
+     * @param  integer                   $weight
+     * @throws \Endeveit\Cache\Exception
      */
     public function addConnection($host, $port = 6379, $timeout = 0.0, $weight = self::DEFAULT_WEIGHT)
     {
@@ -283,10 +283,10 @@ class Redis extends AbstractRedis
     /**
      * Returns connection by key name.
      *
-     * @param  string            $id
+     * @param  string                    $id
      * @return \Redis
      * @throws \RuntimeException
-     * @throws \Cache\Exception
+     * @throws \Endeveit\Cache\Exception
      */
     private function getConnection($id)
     {
