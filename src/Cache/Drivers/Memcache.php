@@ -8,6 +8,7 @@
  */
 namespace Cache\Drivers;
 
+use Cache\Abstracts\Common;
 use Cache\Exception;
 
 /**

@@ -8,8 +8,8 @@
  */
 namespace Cache\Drivers\Pdo;
 
+use Cache\Abstracts\Pdo;
 use Cache\Exception;
-use Cache\Drivers\Pdo;
 
 /**
  * PDO MySQL cache driver.

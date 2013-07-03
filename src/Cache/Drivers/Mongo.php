@@ -8,6 +8,8 @@
  */
 namespace Cache\Drivers;
 
+use Cache\Abstracts\Common;
+
 /**
  * Driver that stores data in MongoDB.
  */

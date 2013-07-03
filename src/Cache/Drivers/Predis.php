@@ -8,6 +8,7 @@
  */
 namespace Cache\Drivers;
 
+use Cache\Abstracts\Redis as AbstractRedis;
 use Predis\Client;
 use Predis\Pipeline\PipelineContext;
 
@@ -15,7 +16,7 @@ use Predis\Pipeline\PipelineContext;
  * Driver that stores data in Redis and uses Predis library
  * to work with it.
  */
-class Predis extends Common
+class Predis extends AbstractRedis
 {
 
     /**
@@ -24,13 +25,6 @@ class Predis extends Common
      * @var \Predis\Client
      */
     protected $client = null;
-
-    /**
-     * Prefix for entries that stores tags.
-     *
-     * @var string
-     */
-    protected $tagPrefix = 'tags:';
 
     /**
      * The class constructor.
@@ -259,17 +253,6 @@ class Predis extends Common
         $this->client->flushdb();
 
         return true;
-    }
-
-    /**
-     * Returns the identifier for the tag.
-     *
-     * @param  string $tag
-     * @return string
-     */
-    protected function getTagWithPrefix($tag)
-    {
-        return $this->tagPrefix . $tag;
     }
 
 }
