@@ -57,6 +57,11 @@ touch($id, $extraLifetime)
 Extends lifetime of item identified by $id adding $extraLifetime to it.
 Total lifetime cannot be more than 31 days.
 
+contains($id)
+--------------------------
+
+Test if an entry exists in the cache.
+
 flush()
 -------------------------
 
