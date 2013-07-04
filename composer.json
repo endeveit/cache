@@ -36,5 +36,6 @@
     },
     "autoload": {
         "psr-0": { "Endeveit\\Cache": "src/" }
-    }
+    },
+    "target-dir": "../../"
 }
