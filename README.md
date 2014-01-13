@@ -1,4 +1,4 @@
-Cache library
+Cache library [![Build Status](https://travis-ci.org/endeveit/cache.png?branch=v0.2)](https://travis-ci.org/endeveit/cache)
 =============
 
 Simple caching library with support for tags.
