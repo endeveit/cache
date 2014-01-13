@@ -156,7 +156,7 @@ class XCache extends Memcache
             }
 
             $data   = array($data, time(), $newLifetime);
-            $result = xcache_set($this->getPrefixedIdentifier($id), $data, $this->flag, $newLifetime);
+            $result = xcache_set($this->getPrefixedIdentifier($id), $data, $newLifetime);
 
             return $result;
         }

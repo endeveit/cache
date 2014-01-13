@@ -8,5 +8,11 @@ php:
   - 5.4
   - 5.5
 
+services:
+  - memcached
+  - mongodb
+  - redis-server
+
 script:
   - php vendor/bin/phpcs --standard=PSR2 --encoding=utf-8 src/
+  - phpunit --configuration phpunit.xml.travisci

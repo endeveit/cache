@@ -278,6 +278,8 @@ class Redis extends AbstractRedis
         foreach (array_keys($this->options) as $key) {
             $this->getRedisObject($key)->flushDB();
         }
+
+        return true;
     }
 
     /**

@@ -86,30 +86,6 @@ class Memcache extends Common
     /**
      * {@inheritdoc}
      *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function increment($id, $value = 1)
-    {
-        return $this->client->increment($this->getPrefixedIdentifier($id), $value);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function decrement($id, $value = 1)
-    {
-        return $this->client->decrement($this->getPrefixedIdentifier($id), $value);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
      * @param  string      $id
      * @return mixed|false
      */
@@ -194,6 +170,8 @@ class Memcache extends Common
             $this->remove($entryId);
             $this->removeIdFromTags($tags, $entryId);
         }
+
+        return true;
     }
 
     /**

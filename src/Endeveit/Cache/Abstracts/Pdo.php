@@ -98,7 +98,7 @@ abstract class Pdo extends Common
         $result = $this->fetchRows($sql, array($id));
         if (!empty($result)
             && ($result[0]['expires_at'] == 0 || $result[0]['expires_at'] > time())) {
-            return unserialize($result['data']);
+            return unserialize($result[0]['data']);
         }
 
         return false;

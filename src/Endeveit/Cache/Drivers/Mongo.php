@@ -136,7 +136,9 @@ class Mongo extends Common
 
         $this->doRemove($id);
 
-        return $this->collection->insert($object);
+        $result = $this->collection->insert($object);
+
+        return $result['err'] === null;
     }
 
     /**
@@ -147,7 +149,9 @@ class Mongo extends Common
      */
     protected function doRemove($id)
     {
-        return $this->collection->remove(array('id' => $id));
+        $result = $this->collection->remove(array('id' => $id));
+
+        return $result['err'] === null;
     }
 
     /**
@@ -181,10 +185,12 @@ class Mongo extends Common
         $expiresAt = new \DateTime();
         $expiresAt->add(new \DateInterval('PT' . intval($extraLifetime) . 'S'));
 
-        return $this->collection->update(
+        $result = $this->collection->update(
             array('id'   => $id),
             array('$set' => array('expires_at' => $expiresAt))
         );
+
+        return $result['err'] === null;
     }
 
     /**
