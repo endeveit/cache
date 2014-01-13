@@ -27,36 +27,35 @@ class MySQL extends Pdo
         $this->dbh->beginTransaction();
 
         try {
-            $this->executeQuery('DROP INDEX IF EXISTS `' . $this->prefix .
-                'tag_id_index`');
-            $this->executeQuery('DROP INDEX IF EXISTS `' . $this->prefix .
-                'tag_name_index`');
-            $this->executeQuery('DROP INDEX IF EXISTS `' . $this->prefix .
-                'cache_id_expires_at_index`');
-            $this->executeQuery('DROP TABLE IF EXISTS `' . $this->prefix .
-                'cache`');
-            $this->executeQuery('DROP TABLE IF EXISTS `' . $this->prefix .
-                'tag`');
+            $this->executeQuery('DROP INDEX IF EXISTS `' . $this->prefix . 'tag_id_index`');
+            $this->executeQuery('DROP INDEX IF EXISTS `' . $this->prefix . 'tag_name_index`');
+            $this->executeQuery('DROP INDEX IF EXISTS `' . $this->prefix . 'cache_id_expires_at_index`');
+            $this->executeQuery('DROP TABLE IF EXISTS `' . $this->prefix . 'cache`');
+            $this->executeQuery('DROP TABLE IF EXISTS `' . $this->prefix . 'tag`');
 
             $this->executeQuery(
                 'CREATE TABLE `' . $this->prefix . 'cache` (' .
-                    '`id` VARCHAR(255) PRIMARY KEY, ' .
-                    '`data` LONGTEXT, ' .
-                    '`created_at` UNSIGNED INTEGER, ' .
-                    '`expires_at` UNSIGNED INTEGER)');
-            $this->executeQuery(
-                'CREATE TABLE `' . $this->prefix .
-                    'tag` (`name` VARCHAR(255), `id` TEXT)');
-            $this->executeQuery(
-                'CREATE INDEX `' . $this->prefix .
-                    'tag_id_index` ON `' . $this->prefix . 'tag`(`id`)');
-            $this->executeQuery(
-                'CREATE INDEX `' . $this->prefix .
-                    'tag_name_index` ON `' . $this->prefix . 'tag`(`name`)');
-            $this->executeQuery(
-                'CREATE INDEX `' . $this->prefix .
-                    'cache_id_expires_at_index` ON `' . $this->prefix .
-                        'cache`(`id`, `expires_at`)');
+                '`id` VARCHAR(255) PRIMARY KEY, ' .
+                '`data` LONGTEXT, ' .
+                '`created_at` UNSIGNED INTEGER, ' .
+                '`expires_at` UNSIGNED INTEGER)'
+            );
+            $this->executeQuery(sprintf(
+                'CREATE TABLE `%stag` (`name` VARCHAR(255), `id` TEXT)',
+                $this->prefix
+            ));
+            $this->executeQuery(sprintf(
+                'CREATE INDEX `%1$stag_id_index` ON `%1$stag`(`id`)',
+                $this->prefix
+            ));
+            $this->executeQuery(sprintf(
+                'CREATE INDEX `%1$stag_name_index` ON `%1$stag`(`name`)',
+                $this->prefix
+            ));
+            $this->executeQuery(sprintf(
+                'CREATE INDEX `%1$scache_id_expires_at_index` ON `%1$scache`(`id`, `expires_at`)',
+                $this->prefix
+            ));
 
             $this->dbh->commit();
         } catch (Exception $e) {
@@ -91,5 +90,4 @@ class MySQL extends Pdo
     {
         return "`" . $identifier . "`";
     }
-
 }

@@ -441,5 +441,4 @@ class Redis extends AbstractRedis
         $this->localCache = array();
         $this->localCacheCount = 0;
     }
-
 }

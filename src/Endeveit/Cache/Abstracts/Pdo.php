@@ -172,8 +172,7 @@ abstract class Pdo extends Common
 
             $this->executeQuery(
                 sprintf(
-                    'INSERT INTO %s (%s, %s, %s, %s) VALUES ' .
-                        '(?, ?, ?, ?)',
+                    'INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)',
                     $this->tables['cache'],
                     $this->fields['id'],
                     $this->fields['data'],
@@ -334,10 +333,7 @@ abstract class Pdo extends Common
     protected function validateIdentifier($id)
     {
         if (!is_string($id) || strlen($id) > 255) {
-            throw new Exception(
-                'Invalid identifier: ' .
-                    'must be a string less than 255 chars length.'
-            );
+            throw new Exception('Invalid identifier: must be a string less than 255 chars length.');
         }
     }
 
@@ -493,5 +489,4 @@ abstract class Pdo extends Common
      * @return string
      */
     abstract protected function getQuotedIdentifier($identifier);
-
 }

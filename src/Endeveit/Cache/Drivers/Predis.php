@@ -254,5 +254,4 @@ class Predis extends AbstractRedis
 
         return true;
     }
-
 }

@@ -100,5 +100,4 @@ interface Driver
      * @return boolean
      */
     public function flush();
-
 }

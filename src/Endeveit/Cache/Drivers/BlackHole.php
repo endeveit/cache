@@ -133,5 +133,4 @@ class BlackHole implements Driver
     {
         return true;
     }
-
 }

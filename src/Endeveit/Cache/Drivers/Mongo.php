@@ -131,7 +131,7 @@ class Mongo extends Common
 
         if (null !== $expiresAt) {
             $expiresAt->add(new \DateInterval('PT' . intval($lifetime) . 'S'));
-            $object['expires_at'] = new \MongoDate($expiresAt->format('U'));;
+            $object['expires_at'] = new \MongoDate($expiresAt->format('U'));
         }
 
         $this->doRemove($id);
@@ -202,5 +202,4 @@ class Mongo extends Common
 
         return false;
     }
-
 }

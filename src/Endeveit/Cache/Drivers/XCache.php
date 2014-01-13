@@ -181,5 +181,4 @@ class XCache extends Memcache
 
         return true;
     }
-
 }

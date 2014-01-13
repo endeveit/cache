@@ -258,5 +258,4 @@ abstract class Common implements Driver
      * @return boolean
      */
     abstract protected function doFlush();
-
 }

@@ -382,5 +382,4 @@ class Memcache extends Common
 
         return $id;
     }
-
 }
