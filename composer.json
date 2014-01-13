@@ -27,6 +27,9 @@
     "require": {
         "php": ">=5.3"
     },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "1.*"
+    },
     "suggest": {
         "ext-memcache": "Allow using Memcache driver",
         "ext-mongo": "Allow using Mongo driver",
