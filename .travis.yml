@@ -1,5 +1,8 @@
 language: php
 
+before_script:
+  - composer update --dev
+
 php:
   - 5.3
   - 5.4
