@@ -91,7 +91,15 @@ class Redis extends AbstractRedis
      */
     public function increment($id, $value = 1)
     {
-        return $this->getConnection($id)->incrBy($id, $value);
+        $connection = $this->getConnection($id);
+
+        if (!$connection->exists($id)) {
+            $connection->hSet($id, 'data', $value);
+
+            return $value;
+        }
+
+        return $connection->hIncrBy($id, 'data', $value);
     }
 
     /**
@@ -103,7 +111,16 @@ class Redis extends AbstractRedis
      */
     public function decrement($id, $value = 1)
     {
-        return $this->getConnection($id)->decrBy($id, $value);
+        $connection = $this->getConnection($id);
+
+        if (!$connection->exists($id)) {
+            $value = 0 - $value;
+            $connection->hSet($id, 'data', $value);
+
+            return $value;
+        }
+
+        return $connection->hDecrBy($id, 'data', $value);
     }
 
     /**
@@ -117,7 +134,11 @@ class Redis extends AbstractRedis
         $result = $this->getConnection($id)->hGet($id, 'data');
 
         if (!empty($result) && is_string($result) && strlen($result) > 1) {
-            $result = unserialize($result);
+            if (is_numeric($result)) {
+                $result = intval($result);
+            } else {
+                $result = unserialize($result);
+            }
         } else {
             $result = false;
         }
