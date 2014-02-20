@@ -105,27 +105,6 @@ class Redis extends AbstractRedis
     /**
      * {@inheritdoc}
      *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function decrement($id, $value = 1)
-    {
-        $connection = $this->getConnection($id);
-
-        if (!$connection->exists($id)) {
-            $value = 0 - $value;
-            $connection->hSet($id, 'data', $value);
-
-            return $value;
-        }
-
-        return $connection->hDecrBy($id, 'data', $value);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
      * @param  string      $id
      * @return mixed|false
      */
@@ -301,6 +280,23 @@ class Redis extends AbstractRedis
         }
 
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @return integer
+     */
+    protected function getValueForIncrementOrDecrement($id)
+    {
+        $value = $this->getConnection($id)->hGet($id, 'data');
+
+        if (!$value || !is_numeric($value)) {
+            $value = 0;
+        }
+
+        return $value;
     }
 
     /**
