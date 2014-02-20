@@ -43,6 +43,8 @@ class Redis extends AbstractRedis
 
     protected $hashringIsInitialized = false;
 
+    protected $hIncrByIsSupported = false;
+
     /**
      * The class constructor.
      *
@@ -56,6 +58,7 @@ class Redis extends AbstractRedis
         }
 
         $this->localCacheSize = intval($localCacheSize);
+        $this->hIncrByIsSupported = version_compare(phpversion('redis'), '2.2.4', '>=');
     }
 
     /**
@@ -99,7 +102,11 @@ class Redis extends AbstractRedis
             return $value;
         }
 
-        return $connection->hIncrBy($id, 'data', $value);
+        if ($this->hIncrByIsSupported) {
+            $connection->hIncrBy($id, 'data', $value);
+        } else {
+            return $connection->eval(sprintf("return redis.call('HINCRBY','%s','data',%d)", $id, $value));
+        }
     }
 
     /**
@@ -120,7 +127,11 @@ class Redis extends AbstractRedis
             return $value;
         }
 
-        return $connection->hDecrBy($id, 'data', $value);
+        if ($this->hIncrByIsSupported) {
+            $connection->hDecrBy($id, 'data', $value);
+        } else {
+            return $connection->eval(sprintf("return redis.call('HDECRBY','%s','data',%d)", $id, $value));
+        }
     }
 
     /**
