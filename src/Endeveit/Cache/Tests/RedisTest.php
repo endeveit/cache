@@ -16,7 +16,7 @@ class RedisTest extends Base
      */
     protected function getDriver()
     {
-        $driver = new Driver();
+        $driver = new Driver(64, 'PHPUnit_');
         $driver->addConnection('127.0.0.1');
 
         return $driver;

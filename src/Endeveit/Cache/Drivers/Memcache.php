@@ -8,7 +8,7 @@
  */
 namespace Endeveit\Cache\Drivers;
 
-use Endeveit\Cache\Abstracts\Common;
+use Endeveit\Cache\Abstracts\Prefixable;
 use Endeveit\Cache\Exception;
 
 /**
@@ -17,7 +17,7 @@ use Endeveit\Cache\Exception;
  *
  * @link https://github.com/bigwhoop/taggable-zend-memcached-backend
  */
-class Memcache extends Common
+class Memcache extends Prefixable
 {
 
     /**
@@ -49,13 +49,6 @@ class Memcache extends Common
     protected $flag = 0;
 
     /**
-     * Prefix for all identifiers.
-     *
-     * @var string
-     */
-    protected $prefix = '';
-
-    /**
      * The class constructor.
      * If $compress provided, the items will be stored compressed.
      *
@@ -72,7 +65,7 @@ class Memcache extends Common
             try {
                 $this->validateIdentifier($prefix);
 
-                $this->prefix = $prefix;
+                $this->identifierPrefix = $prefix;
             } catch (Exception $e) {
                 throw new Exception('Invalid prefix');
             }
@@ -333,31 +326,5 @@ class Memcache extends Common
     protected function getIdentifierForTag($tag)
     {
         return $this->getPrefixedIdentifier(sprintf(self::TAG_NAME_FORMAT, $tag));
-    }
-
-    /**
-     * Returns prefixed identifier.
-     *
-     * @param  string $id
-     * @return string
-     */
-    protected function getPrefixedIdentifier($id)
-    {
-        return $this->prefix . $id;
-    }
-
-    /**
-     * Returns identifier without prefix.
-     *
-     * @param  string $id
-     * @return string
-     */
-    protected function getIdentifierWithoutPrefix($id)
-    {
-        if (!empty($this->prefix)) {
-            return substr($id, strlen($this->prefix));
-        }
-
-        return $id;
     }
 }

@@ -11,7 +11,7 @@ namespace Endeveit\Cache\Abstracts;
 /**
  * Abstract class for redis drivers.
  */
-abstract class Redis extends Common
+abstract class Redis extends Prefixable
 {
 
     /**

@@ -29,7 +29,7 @@ class XCache extends Memcache
             try {
                 $this->validateIdentifier($prefix);
 
-                $this->prefix = $prefix;
+                $this->identifierPrefix = $prefix;
             } catch (Exception $e) {
                 throw new Exception('Invalid prefix');
             }

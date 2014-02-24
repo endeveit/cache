@@ -47,15 +47,17 @@ class Redis extends AbstractRedis
      * The class constructor.
      *
      * @param  integer         $localCacheSize
+     * @param  string          $prefix
      * @throws \LogicException
      */
-    public function __construct($localCacheSize = 256)
+    public function __construct($localCacheSize = 256, $prefix = '')
     {
         if (!extension_loaded('redis')) {
             throw new \LogicException('The redis extension is needed to use this cache adapter');
         }
 
-        $this->localCacheSize = intval($localCacheSize);
+        $this->localCacheSize   = intval($localCacheSize);
+        $this->identifierPrefix = $prefix;
     }
 
     /**
@@ -91,6 +93,7 @@ class Redis extends AbstractRedis
      */
     public function increment($id, $value = 1)
     {
+        $id         = $this->getPrefixedIdentifier($id);
         $connection = $this->getConnection($id);
 
         if (!$connection->exists($id)) {
@@ -110,6 +113,7 @@ class Redis extends AbstractRedis
      */
     protected function doLoad($id)
     {
+        $id     = $this->getPrefixedIdentifier($id);
         $result = $this->getConnection($id)->hGet($id, 'data');
 
         if (!empty($result) && is_string($result) && strlen($result) > 1) {
@@ -133,14 +137,16 @@ class Redis extends AbstractRedis
      */
     protected function doLoadMany(array $identifiers)
     {
-        $result = array();
+        $result   = array();
+        $prefixed = array_map(array($this, 'getPrefixedIdentifier'), $identifiers);
 
-        foreach ($identifiers as $identifier) {
+        foreach ($prefixed as $identifier) {
             $row = $this->getConnection($identifier)->hGet($identifier, 'data');
+            $id  = $this->getIdentifierWithoutPrefix($identifier);
             if (!empty($row) && is_string($row) && strlen($row) > 1) {
-                $result[$identifier] = unserialize($row);
+                $result[$id] = unserialize($row);
             } else {
-                $result[$identifier] = false;
+                $result[$id] = false;
             }
         }
 
@@ -158,6 +164,7 @@ class Redis extends AbstractRedis
      */
     protected function doSave($data, $id, array $tags = array(), $lifetime = false)
     {
+        $id       = $this->getPrefixedIdentifier($id);
         $dataPipe = $this->getConnection($id)->multi();
 
         // Store the data in redis hash «data» and «tags» fields
@@ -197,6 +204,7 @@ class Redis extends AbstractRedis
      */
     protected function doRemove($id)
     {
+        $id   = $this->getPrefixedIdentifier($id);
         $con  = $this->getConnection($id);
         $tags = $con->hGet($id, 'tags');
 
@@ -237,7 +245,7 @@ class Redis extends AbstractRedis
 
             if (!empty($keys)) {
                 foreach ($keys as $key) {
-                    $this->remove($key);
+                    $this->remove($this->getIdentifierWithoutPrefix($key));
                 }
             };
 
@@ -256,6 +264,7 @@ class Redis extends AbstractRedis
      */
     protected function doTouch($id, $extraLifetime)
     {
+        $id     = $this->getPrefixedIdentifier($id);
         $con    = $this->getConnection($id);
         $result = $con->ttl($id);
 
@@ -290,6 +299,7 @@ class Redis extends AbstractRedis
      */
     protected function getValueForIncrementOrDecrement($id)
     {
+        $id    = $this->getPrefixedIdentifier($id);
         $value = $this->getConnection($id)->hGet($id, 'data');
 
         if (!$value || !is_numeric($value)) {
