@@ -116,7 +116,7 @@ class Redis extends AbstractRedis
         $id     = $this->getPrefixedIdentifier($id);
         $result = $this->getConnection($id)->hGet($id, 'data');
 
-        if (!empty($result) && is_string($result) && strlen($result) > 1) {
+        if (!empty($result) && (is_string($result) && strlen($result) > 1) || is_numeric($result)) {
             if (is_numeric($result)) {
                 $result = intval($result);
             } else {
