@@ -11,6 +11,7 @@ namespace Endeveit\Cache\Drivers;
 use Endeveit\Cache\Abstracts\Redis as AbstractRedis;
 use Predis\Client;
 use Predis\Pipeline\PipelineContext;
+use Predis\ServerException;
 
 /**
  * Driver that stores data in Redis and uses Predis library
@@ -68,10 +69,19 @@ class Predis extends AbstractRedis
      */
     protected function doLoad($id)
     {
-        $result = $this->client->hget($id, 'data');
+        try {
+            $result = $this->client->hget($id, 'data');
+        } catch (ServerException $e) {
+            // Probably trying to get incremented key
+            $result = $this->client->get($id);
+        }
 
-        if (is_string($result) && !empty($result) && strlen($result) > 1) {
-            $result = unserialize($result);
+        if (!empty($result) && (is_string($result) && strlen($result) > 1) || is_numeric($result)) {
+            if (is_numeric($result)) {
+                $result = intval($result);
+            } else {
+                $result = unserialize($result);
+            }
         } else {
             $result = false;
         }
