@@ -241,7 +241,8 @@ class Redis extends AbstractRedis
     {
         foreach (array_unique($tags) as $tag) {
             $tag  = $this->getTagWithPrefix($tag);
-            $keys = $this->getConnection($tag)->sMembers($tag);
+            $con  = $this->getConnection($tag);
+            $keys = $con->sMembers($tag);
 
             if (!empty($keys)) {
                 foreach ($keys as $key) {
@@ -250,6 +251,7 @@ class Redis extends AbstractRedis
             };
 
             $this->doRemove($tag);
+            $con->del($tag);
         }
 
         return true;
