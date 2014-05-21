@@ -6,10 +6,10 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers\Pdo;
+namespace Endeveit\Cache\Drivers\Pdo;
 
-use Cache\Abstracts\Pdo;
-use Cache\Exception;
+use Endeveit\Cache\Abstracts\Pdo;
+use Endeveit\Cache\Exception;
 
 /**
  * PDO SQLite cache driver.
@@ -44,37 +44,35 @@ class SQLite extends Pdo
         $this->dbh->beginTransaction();
 
         try {
-            $this->executeQuery('DROP INDEX IF EXISTS \'' . $this->prefix .
-                'tag_id_index\'');
-            $this->executeQuery('DROP INDEX IF EXISTS \'' . $this->prefix .
-                'tag_name_index\'');
-            $this->executeQuery('DROP INDEX IF EXISTS \'' . $this->prefix .
-                'cache_id_expires_at_index\'');
-            $this->executeQuery('DROP TABLE IF EXISTS \'' . $this->prefix .
-                'cache\'');
-            $this->executeQuery('DROP TABLE IF EXISTS \'' . $this->prefix .
-                'tag\'');
+            $this->executeQuery("DROP INDEX IF EXISTS '" . $this->prefix . "tag_id_index'");
+            $this->executeQuery("DROP INDEX IF EXISTS '" . $this->prefix . "tag_name_index'");
+            $this->executeQuery("DROP INDEX IF EXISTS '" . $this->prefix . "cache_id_expires_at_index'");
+            $this->executeQuery("DROP TABLE IF EXISTS '" . $this->prefix . "cache'");
+            $this->executeQuery("DROP TABLE IF EXISTS '" . $this->prefix . "tag'");
 
             $this->executeQuery(
-                'CREATE TABLE \'' . $this->prefix . 'cache\' (' .
-                    '\'id\' TEXT PRIMARY KEY, ' .
-                    '\'data\' BLOB, '.
-                    '\'created_at\' INTEGER,' .
-                    '\'expires_at\' INTEGER)');
-            $this->executeQuery(
-                'CREATE TABLE \'' . $this->prefix .
-                    'tag\' (\'name\' TEXT, \'id\' TEXT)');
-            $this->executeQuery(
-                'CREATE INDEX \'' . $this->prefix .
-                    'tag_id_index\' ON \'' . $this->prefix . 'tag\'(\'id\')');
-            $this->executeQuery(
-                'CREATE INDEX \'' . $this->prefix .
-                    'tag_name_index\' ON \'' . $this->prefix .
-                        'tag\'(\'name\')');
-            $this->executeQuery(
-                'CREATE INDEX \'' . $this->prefix .
-                    'cache_id_expires_at_index\' ON \'' . $this->prefix .
-                        'cache\'(\'id\', \'expires_at\')');
+                "CREATE TABLE '" . $this->prefix . "cache' (" .
+                "'id' TEXT PRIMARY KEY, " .
+                "'data' BLOB, ".
+                "'created_at' INTEGER, " .
+                "'expires_at' INTEGER)"
+            );
+            $this->executeQuery(sprintf(
+                "CREATE TABLE '%stag' ('name' TEXT, 'id' TEXT)",
+                $this->prefix
+            ));
+            $this->executeQuery(sprintf(
+                "CREATE INDEX '%1\$stag_id_index' ON '%1\$stag'('id')",
+                $this->prefix
+            ));
+            $this->executeQuery(sprintf(
+                "CREATE INDEX '%1\$stag_name_index' ON '%1\$stag'('name')",
+                $this->prefix
+            ));
+            $this->executeQuery(sprintf(
+                "CREATE INDEX '%1\$scache_id_expires_at_index' ON '%1\$scache'('id', 'expires_at')",
+                $this->prefix
+            ));
 
             $this->dbh->commit();
         } catch (Exception $e) {
@@ -123,5 +121,4 @@ class SQLite extends Pdo
     {
         return "'" . $identifier . "'";
     }
-
 }

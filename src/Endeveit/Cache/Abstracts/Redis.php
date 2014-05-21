@@ -6,14 +6,12 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Abstracts;
+namespace Endeveit\Cache\Abstracts;
 
 /**
- * User: endeveit
- * Date: 03.07.13
- * Time: 10:25
+ * Abstract class for redis drivers.
  */
-abstract class Redis extends Common
+abstract class Redis extends Prefixable
 {
 
     /**
@@ -33,5 +31,4 @@ abstract class Redis extends Common
     {
         return $this->tagPrefix . $tag;
     }
-
 }

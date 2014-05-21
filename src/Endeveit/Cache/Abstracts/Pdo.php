@@ -6,9 +6,9 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Abstracts;
+namespace Endeveit\Cache\Abstracts;
 
-use Cache\Exception;
+use Endeveit\Cache\Exception;
 
 /**
  * Driver that stores data in relational database and uses PDO to work with it.
@@ -98,7 +98,7 @@ abstract class Pdo extends Common
         $result = $this->fetchRows($sql, array($id));
         if (!empty($result)
             && ($result[0]['expires_at'] == 0 || $result[0]['expires_at'] > time())) {
-            return unserialize($result['data']);
+            return unserialize($result[0]['data']);
         }
 
         return false;
@@ -172,8 +172,7 @@ abstract class Pdo extends Common
 
             $this->executeQuery(
                 sprintf(
-                    'INSERT INTO %s (%s, %s, %s, %s) VALUES ' .
-                        '(?, ?, ?, ?)',
+                    'INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)',
                     $this->tables['cache'],
                     $this->fields['id'],
                     $this->fields['data'],
@@ -328,26 +327,23 @@ abstract class Pdo extends Common
      * Validates cache identifier or a tag, throws an exception in
      * case of a problem.
      *
-     * @param  string           $id
-     * @throws \Cache\Exception
+     * @param  string                    $id
+     * @throws \Endeveit\Cache\Exception
      */
     protected function validateIdentifier($id)
     {
         if (!is_string($id) || strlen($id) > 255) {
-            throw new Exception(
-                'Invalid identifier: ' .
-                    'must be a string less than 255 chars length.'
-            );
+            throw new Exception('Invalid identifier: must be a string less than 255 chars length.');
         }
     }
 
     /**
      * Register a cache id with the given tag.
      *
-     * @param  string           $id
-     * @param  string           $tag
+     * @param  string                    $id
+     * @param  string                    $tag
      * @return boolean
-     * @throws \Cache\Exception
+     * @throws \Endeveit\Cache\Exception
      */
     protected function registerTag($id, $tag)
     {
@@ -414,9 +410,9 @@ abstract class Pdo extends Common
     /**
      * Executes an SQL query.
      *
-     * @param  string                      $sql
-     * @param  array                       $params
-     * @throws \Cache\Exception|\Exception
+     * @param  string                               $sql
+     * @param  array                                $params
+     * @throws \Endeveit\Cache\Exception|\Exception
      */
     protected function executeQuery($sql, $params = array())
     {
@@ -449,11 +445,11 @@ abstract class Pdo extends Common
     /**
      * Executes SQL and return result of fetch.
      *
-     * @param  string           $sql
-     * @param  array            $params
-     * @param  integer          $fetchStyle
+     * @param  string                    $sql
+     * @param  array                     $params
+     * @param  integer                   $fetchStyle
      * @return array
-     * @throws \Cache\Exception
+     * @throws \Endeveit\Cache\Exception
      */
     protected function fetchRows($sql, $params = array(), $fetchStyle = \PDO::FETCH_ASSOC)
     {
@@ -469,7 +465,7 @@ abstract class Pdo extends Common
     /**
      * Throws exception when database error occurs.
      *
-     * @throws \Cache\Exception
+     * @throws \Endeveit\Cache\Exception
      */
     protected function throwException()
     {
@@ -493,5 +489,4 @@ abstract class Pdo extends Common
      * @return string
      */
     abstract protected function getQuotedIdentifier($identifier);
-
 }

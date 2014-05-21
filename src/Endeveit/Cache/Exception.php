@@ -6,7 +6,7 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache;
+namespace Endeveit\Cache;
 
 /**
  * Base exception.
