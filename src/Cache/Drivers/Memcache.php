@@ -219,7 +219,7 @@ class Memcache extends Common
 
             $data = array($data, time(), $newLT);
 
-            // We try replace() first becase set() seems to be slower
+            // We try replace() first because set() seems to be slower
             $result = $this->client->replace($this->getPrefixedIdentifier($id), $data, $this->flag, $newLT);
 
             if (!$result) {
