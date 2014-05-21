@@ -1,7 +1,7 @@
 language: php
 
 before_script:
-  - ./tests/install-php-extensions.sh
+  - ./tests/enable-php-extensions.sh
   - composer update --dev
 
 php:
