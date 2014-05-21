@@ -6,10 +6,10 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Drivers\Memcache;
-use Cache\Exception;
+use Endeveit\Cache\Drivers\Memcache;
+use Endeveit\Cache\Exception;
 
 /**
  * Driver almost the same as Memcache, but uses \Memcached instead of \Memcache.
