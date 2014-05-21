@@ -6,14 +6,14 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Interfaces\Driver as DriverInterface;
+use Endeveit\Cache\Interfaces\Driver;
 
 /**
  * The stub object used only to implement the Driver interfaces.
  */
-class BlackHole implements DriverInterface
+class BlackHole implements Driver
 {
 
     /**
@@ -133,5 +133,4 @@ class BlackHole implements DriverInterface
     {
         return true;
     }
-
 }

@@ -6,10 +6,10 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Abstracts\Redis as AbstractRedis;
-use Cache\Exception;
+use Endeveit\Cache\Abstracts\Redis as AbstractRedis;
+use Endeveit\Cache\Exception;
 
 /**
  * Driver that stores data in Redis and uses \Redis extension
@@ -47,25 +47,27 @@ class Redis extends AbstractRedis
      * The class constructor.
      *
      * @param  integer         $localCacheSize
+     * @param  string          $prefix
      * @throws \LogicException
      */
-    public function __construct($localCacheSize = 256)
+    public function __construct($localCacheSize = 256, $prefix = '')
     {
         if (!extension_loaded('redis')) {
             throw new \LogicException('The redis extension is needed to use this cache adapter');
         }
 
-        $this->localCacheSize = intval($localCacheSize);
+        $this->localCacheSize   = intval($localCacheSize);
+        $this->identifierPrefix = $prefix;
     }
 
     /**
      * Adds new connection to connections pool.
      *
-     * @param  string           $host
-     * @param  integer          $port
-     * @param  float            $timeout
-     * @param  integer          $weight
-     * @throws \Cache\Exception
+     * @param  string                    $host
+     * @param  integer                   $port
+     * @param  float                     $timeout
+     * @param  integer                   $weight
+     * @throws \Endeveit\Cache\Exception
      */
     public function addConnection($host, $port = 6379, $timeout = 0.0, $weight = self::DEFAULT_WEIGHT)
     {
@@ -91,19 +93,16 @@ class Redis extends AbstractRedis
      */
     public function increment($id, $value = 1)
     {
-        return $this->getConnection($id)->incrBy($id, $value);
-    }
+        $id         = $this->getPrefixedIdentifier($id);
+        $connection = $this->getConnection($id);
 
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function decrement($id, $value = 1)
-    {
-        return $this->getConnection($id)->decrBy($id, $value);
+        if (!$connection->exists($id)) {
+            $connection->hSet($id, 'data', $value);
+
+            return $value;
+        }
+
+        return $connection->hIncrBy($id, 'data', $value);
     }
 
     /**
@@ -114,10 +113,15 @@ class Redis extends AbstractRedis
      */
     protected function doLoad($id)
     {
+        $id     = $this->getPrefixedIdentifier($id);
         $result = $this->getConnection($id)->hGet($id, 'data');
 
-        if (!empty($result) && is_string($result) && strlen($result) > 1) {
-            $result = unserialize($result);
+        if (!empty($result) && (is_string($result) && strlen($result) > 1) || is_numeric($result)) {
+            if (is_numeric($result)) {
+                $result = intval($result);
+            } else {
+                $result = unserialize($result);
+            }
         } else {
             $result = false;
         }
@@ -133,14 +137,16 @@ class Redis extends AbstractRedis
      */
     protected function doLoadMany(array $identifiers)
     {
-        $result = array();
+        $result   = array();
+        $prefixed = array_map(array($this, 'getPrefixedIdentifier'), $identifiers);
 
-        foreach ($identifiers as $identifier) {
+        foreach ($prefixed as $identifier) {
             $row = $this->getConnection($identifier)->hGet($identifier, 'data');
+            $id  = $this->getIdentifierWithoutPrefix($identifier);
             if (!empty($row) && is_string($row) && strlen($row) > 1) {
-                $result[$identifier] = unserialize($row);
+                $result[$id] = unserialize($row);
             } else {
-                $result[$identifier] = false;
+                $result[$id] = false;
             }
         }
 
@@ -158,6 +164,7 @@ class Redis extends AbstractRedis
      */
     protected function doSave($data, $id, array $tags = array(), $lifetime = false)
     {
+        $id       = $this->getPrefixedIdentifier($id);
         $dataPipe = $this->getConnection($id)->multi();
 
         // Store the data in redis hash «data» and «tags» fields
@@ -197,6 +204,7 @@ class Redis extends AbstractRedis
      */
     protected function doRemove($id)
     {
+        $id   = $this->getPrefixedIdentifier($id);
         $con  = $this->getConnection($id);
         $tags = $con->hGet($id, 'tags');
 
@@ -233,15 +241,17 @@ class Redis extends AbstractRedis
     {
         foreach (array_unique($tags) as $tag) {
             $tag  = $this->getTagWithPrefix($tag);
-            $keys = $this->getConnection($tag)->sMembers($tag);
+            $con  = $this->getConnection($tag);
+            $keys = $con->sMembers($tag);
 
             if (!empty($keys)) {
                 foreach ($keys as $key) {
-                    $this->remove($key);
+                    $this->remove($this->getIdentifierWithoutPrefix($key));
                 }
             };
 
             $this->doRemove($tag);
+            $con->del($tag);
         }
 
         return true;
@@ -256,6 +266,7 @@ class Redis extends AbstractRedis
      */
     protected function doTouch($id, $extraLifetime)
     {
+        $id     = $this->getPrefixedIdentifier($id);
         $con    = $this->getConnection($id);
         $result = $con->ttl($id);
 
@@ -278,15 +289,35 @@ class Redis extends AbstractRedis
         foreach (array_keys($this->options) as $key) {
             $this->getRedisObject($key)->flushDB();
         }
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @return integer
+     */
+    protected function getValueForIncrementOrDecrement($id)
+    {
+        $id    = $this->getPrefixedIdentifier($id);
+        $value = $this->getConnection($id)->hGet($id, 'data');
+
+        if (!$value || !is_numeric($value)) {
+            $value = 0;
+        }
+
+        return $value;
     }
 
     /**
      * Returns connection by key name.
      *
-     * @param  string            $id
+     * @param  string                    $id
      * @return \Redis
      * @throws \RuntimeException
-     * @throws \Cache\Exception
+     * @throws \Endeveit\Cache\Exception
      */
     private function getConnection($id)
     {
@@ -441,5 +472,4 @@ class Redis extends AbstractRedis
         $this->localCache = array();
         $this->localCacheCount = 0;
     }
-
 }

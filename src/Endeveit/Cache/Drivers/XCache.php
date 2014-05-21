@@ -7,9 +7,9 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Exception;
+use Endeveit\Cache\Exception;
 
 /**
  * Driver that stores data in XCache and uses php5-xcache extension.
@@ -20,8 +20,8 @@ class XCache extends Memcache
     /**
      * Class constructor to override parent __construct method
      *
-     * @param  string           $prefix
-     * @throws \Cache\Exception
+     * @param  string                    $prefix
+     * @throws \Endeveit\Cache\Exception
      */
     public function __construct($prefix = '')
     {
@@ -29,7 +29,7 @@ class XCache extends Memcache
             try {
                 $this->validateIdentifier($prefix);
 
-                $this->prefix = $prefix;
+                $this->identifierPrefix = $prefix;
             } catch (Exception $e) {
                 throw new Exception('Invalid prefix');
             }
@@ -156,7 +156,7 @@ class XCache extends Memcache
             }
 
             $data   = array($data, time(), $newLifetime);
-            $result = xcache_set($this->getPrefixedIdentifier($id), $data, $this->flag, $newLifetime);
+            $result = xcache_set($this->getPrefixedIdentifier($id), $data, $newLifetime);
 
             return $result;
         }
@@ -181,5 +181,4 @@ class XCache extends Memcache
 
         return true;
     }
-
 }

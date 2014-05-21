@@ -6,10 +6,10 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Abstracts\Common;
-use Cache\Exception;
+use Endeveit\Cache\Abstracts\Prefixable;
+use Endeveit\Cache\Exception;
 
 /**
  * Driver that stores data in Memcached and uses \Memcache.
@@ -17,7 +17,7 @@ use Cache\Exception;
  *
  * @link https://github.com/bigwhoop/taggable-zend-memcached-backend
  */
-class Memcache extends Common
+class Memcache extends Prefixable
 {
 
     /**
@@ -49,20 +49,13 @@ class Memcache extends Common
     protected $flag = 0;
 
     /**
-     * Prefix for all identifiers.
-     *
-     * @var string
-     */
-    protected $prefix = '';
-
-    /**
      * The class constructor.
      * If $compress provided, the items will be stored compressed.
      *
-     * @param  \Memcache        $client
-     * @param  boolean          $compress
-     * @param  string           $prefix
-     * @throws \Cache\Exception
+     * @param  \Memcache                 $client
+     * @param  boolean                   $compress
+     * @param  string                    $prefix
+     * @throws \Endeveit\Cache\Exception
      */
     public function __construct(\Memcache $client, $compress = false, $prefix = '')
     {
@@ -72,7 +65,7 @@ class Memcache extends Common
             try {
                 $this->validateIdentifier($prefix);
 
-                $this->prefix = $prefix;
+                $this->identifierPrefix = $prefix;
             } catch (Exception $e) {
                 throw new Exception('Invalid prefix');
             }
@@ -81,30 +74,6 @@ class Memcache extends Common
         if ($compress) {
             $this->flag = MEMCACHE_COMPRESSED;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function increment($id, $value = 1)
-    {
-        return $this->client->increment($this->getPrefixedIdentifier($id), $value);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function decrement($id, $value = 1)
-    {
-        return $this->client->decrement($this->getPrefixedIdentifier($id), $value);
     }
 
     /**
@@ -194,6 +163,8 @@ class Memcache extends Common
             $this->remove($entryId);
             $this->removeIdFromTags($tags, $entryId);
         }
+
+        return true;
     }
 
     /**
@@ -219,7 +190,7 @@ class Memcache extends Common
 
             $data = array($data, time(), $newLT);
 
-            // We try replace() first becase set() seems to be slower
+            // We try replace() first because set() seems to be slower
             $result = $this->client->replace($this->getPrefixedIdentifier($id), $data, $this->flag, $newLT);
 
             if (!$result) {
@@ -246,8 +217,8 @@ class Memcache extends Common
      * Validates cache identifier or a tag, throws an exception in
      * case of a problem.
      *
-     * @param  string           $id
-     * @throws \Cache\Exception
+     * @param  string                    $id
+     * @throws \Endeveit\Cache\Exception
      */
     protected function validateIdentifier($id)
     {
@@ -356,31 +327,4 @@ class Memcache extends Common
     {
         return $this->getPrefixedIdentifier(sprintf(self::TAG_NAME_FORMAT, $tag));
     }
-
-    /**
-     * Returns prefixed identifier.
-     *
-     * @param  string $id
-     * @return string
-     */
-    protected function getPrefixedIdentifier($id)
-    {
-        return $this->prefix . $id;
-    }
-
-    /**
-     * Returns identifier without prefix.
-     *
-     * @param  string $id
-     * @return string
-     */
-    protected function getIdentifierWithoutPrefix($id)
-    {
-        if (!empty($this->prefix)) {
-            return substr($id, strlen($this->prefix));
-        }
-
-        return $id;
-    }
-
 }

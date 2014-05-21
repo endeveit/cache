@@ -6,9 +6,9 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Drivers;
+namespace Endeveit\Cache\Drivers;
 
-use Cache\Abstracts\Common;
+use Endeveit\Cache\Abstracts\Common;
 
 /**
  * Driver that stores data in MongoDB.
@@ -131,12 +131,14 @@ class Mongo extends Common
 
         if (null !== $expiresAt) {
             $expiresAt->add(new \DateInterval('PT' . intval($lifetime) . 'S'));
-            $object['expires_at'] = new \MongoDate($expiresAt->format('U'));;
+            $object['expires_at'] = new \MongoDate($expiresAt->format('U'));
         }
 
         $this->doRemove($id);
 
-        return $this->collection->insert($object);
+        $result = $this->collection->insert($object);
+
+        return $result['err'] === null;
     }
 
     /**
@@ -147,7 +149,9 @@ class Mongo extends Common
      */
     protected function doRemove($id)
     {
-        return $this->collection->remove(array('id' => $id));
+        $result = $this->collection->remove(array('id' => $id));
+
+        return $result['err'] === null;
     }
 
     /**
@@ -181,10 +185,12 @@ class Mongo extends Common
         $expiresAt = new \DateTime();
         $expiresAt->add(new \DateInterval('PT' . intval($extraLifetime) . 'S'));
 
-        return $this->collection->update(
+        $result = $this->collection->update(
             array('id'   => $id),
             array('$set' => array('expires_at' => $expiresAt))
         );
+
+        return $result['err'] === null;
     }
 
     /**
@@ -202,5 +208,4 @@ class Mongo extends Common
 
         return false;
     }
-
 }

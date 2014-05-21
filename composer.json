@@ -1,6 +1,6 @@
 {
     "name": "endeveit/cache",
-    "version": "0.1",
+    "version": "0.2",
     "type": "library",
     "description": "Simple caching library with support for tags.",
     "keywords": [
@@ -28,7 +28,9 @@
         "php": ">=5.3"
     },
     "require-dev": {
-        "predis/predis": "0.8.x"
+        "phpunit/phpunit": "3.7.*",
+        "predis/predis": "0.8.x",
+        "squizlabs/php_codesniffer": "1.*"
     },
     "suggest": {
         "ext-memcache": "Allow using Memcache driver",
@@ -38,6 +40,6 @@
         "predis/predis": "Allow using Predis driver"
     },
     "autoload": {
-        "psr-0": { "Cache": "src/" }
+        "psr-0": { "Endeveit\\Cache\\": "src/" }
     }
 }

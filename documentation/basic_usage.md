@@ -13,7 +13,7 @@ require "cache/vendor/autoload.php";
 $memcache = new Memcache();
 $memcache->addServer('10.0.0.1', 11211);
 $memcache->addServer('10.0.0.2', 11211);
-$cache = new Cache\Drivers\Memcache($memcache);
+$cache = new Endeveit\Cache\Drivers\Memcache($memcache);
 $cache->save($someData, $someKey, $tagsList, $lifeTime);
 var_dump($cache->load($someKey));
 ```
@@ -56,6 +56,11 @@ touch($id, $extraLifetime)
 
 Extends lifetime of item identified by $id adding $extraLifetime to it.
 Total lifetime cannot be more than 31 days.
+
+contains($id)
+--------------------------
+
+Test if an entry exists in the cache.
 
 flush()
 -------------------------

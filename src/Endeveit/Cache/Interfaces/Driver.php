@@ -6,7 +6,7 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Cache\Interfaces;
+namespace Endeveit\Cache\Interfaces;
 
 /**
  * The interface that all driver classes must implement.
@@ -100,5 +100,4 @@ interface Driver
      * @return boolean
      */
     public function flush();
-
 }
