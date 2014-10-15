@@ -206,24 +206,6 @@ class Redis extends AbstractRedis
     {
         $id   = $this->getPrefixedIdentifier($id);
         $con  = $this->getConnection($id);
-        $tags = $con->hGet($id, 'tags');
-
-        if (!empty($tags)) {
-            $tags = trim($tags);
-
-            if (0 === strpos($tags, 'a:')) {
-                $tags = unserialize($tags);
-            } else {
-                $tags = (array) $tags;
-            }
-        } else {
-            $tags = array();
-        }
-
-        // Remove the identifier from related tags
-        foreach ($tags as $tag) {
-            $this->getConnection($tag)->sRem($tag, $id);
-        }
 
         // Remove the identifier
         $con->del($id);
@@ -250,7 +232,6 @@ class Redis extends AbstractRedis
                 }
             };
 
-            $this->doRemove($tag);
             $con->del($tag);
         }
 
