@@ -9,8 +9,6 @@
  */
 namespace Endeveit\Cache\Drivers;
 
-use Endeveit\Cache\Exception;
-
 /**
  * Driver that stores data in XCache and uses php5-xcache extension.
  */
@@ -18,22 +16,12 @@ class XCache extends Memcache
 {
 
     /**
-     * Class constructor to override parent __construct method
+     * {@inheritdoc}
      *
-     * @param  string                    $prefix
-     * @throws \Endeveit\Cache\Exception
+     * @param array $options
      */
-    public function __construct($prefix = '')
+    public function __construct(array $options = array())
     {
-        if (!empty($prefix)) {
-            try {
-                $this->validateIdentifier($prefix);
-
-                $this->identifierPrefix = $prefix;
-            } catch (Exception $e) {
-                throw new Exception('Invalid prefix');
-            }
-        }
     }
 
     /**
@@ -87,10 +75,10 @@ class XCache extends Memcache
     {
         $result = array();
 
-        foreach ($identifiers as $identifier) {
-            $data = xcache_get($this->getPrefixedIdentifier($identifier));
+        foreach ($identifiers as $id) {
+            $data = xcache_get($id);
             if (is_array($data) && isset($data[0])) {
-                $result[$identifier] = $data[0];
+                $result[$this->getIdentifierWithoutPrefix($id)] = $data[0];
             }
         }
 
@@ -102,13 +90,23 @@ class XCache extends Memcache
     /**
      * {@inheritdoc}
      *
+     * @param  string      $id
+     * @return mixed|false
+     */
+    protected function doLoadRaw($id)
+    {
+        return xcache_get($id);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
      * @param  mixed   $data
      * @param  string  $id
      * @param  array   $tags
-     * @param  boolean $lifetime
      * @return boolean
      */
-    protected function doSave($data, $id, array $tags = array(), $lifetime = false)
+    protected function doSave($data, $id, array $tags = array())
     {
         $this->validateIdentifier($id);
 
@@ -118,50 +116,21 @@ class XCache extends Memcache
 
         return xcache_set(
             $this->getPrefixedIdentifier($id),
-            array($data, time(), $lifetime),
-            (integer) $lifetime
+            array($data)
         );
     }
 
     /**
      * {@inheritdoc}
      *
-     * @param  string  $id
+     * @param  scalar          $data
+     * @param  string          $id
+     * @param  integer|boolean $lifetime
      * @return boolean
      */
-    protected function doRemove($id)
+    protected function doSaveScalar($data, $id, $lifetime = false)
     {
-        return xcache_unset($this->getPrefixedIdentifier($id));
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $extraLifetime
-     * @return boolean
-     */
-    protected function doTouch($id, $extraLifetime)
-    {
-        $tmp = xcache_get($this->getPrefixedIdentifier($id));
-
-        if (is_array($tmp)) {
-            list($data, $mtime, $lifetime) = $tmp;
-
-            // Calculate new lifetime
-            $newLifetime = $lifetime - (time() - $mtime) + $extraLifetime;
-
-            if ($newLifetime <= 0) {
-                return false;
-            }
-
-            $data   = array($data, time(), $newLifetime);
-            $result = xcache_set($this->getPrefixedIdentifier($id), $data, $newLifetime);
-
-            return $result;
-        }
-
-        return false;
+        return xcache_set($id, $data, $lifetime);
     }
 
     /**

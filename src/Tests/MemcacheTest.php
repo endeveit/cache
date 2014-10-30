@@ -19,6 +19,6 @@ class MemcacheTest extends Base
         $memcache = new \Memcache();
         $memcache->addServer('127.0.0.1');
 
-        return new Driver($memcache, false, 'PHPUnit_');
+        return new Driver(array('client' => $memcache, 'prefix_id' => 'PHPUnit_'));
     }
 }

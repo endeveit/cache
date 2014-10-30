@@ -19,11 +19,18 @@ class BlackHole implements Driver
     /**
      * {@inheritdoc}
      *
-     * @param  string      $id
-     * @return mixed|false Data on success, false on failure
+     * @param  string          $id
+     * @param  callable        $cbGenerateData
+     * @param  array           $tags
+     * @param  integer|boolean $lifetime
+     * @return mixed|false     Data on success, false on failure
      */
-    public function load($id)
+    public function load($id, $cbGenerateData = null, array $tags = array(), $lifetime = false)
     {
+        if ((null !== $cbGenerateData) && is_callable($cbGenerateData)) {
+            return call_user_func($cbGenerateData);
+        }
+
         return false;
     }
 

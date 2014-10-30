@@ -8,7 +8,7 @@
  */
 namespace Endeveit\Cache\Drivers;
 
-use Endeveit\Cache\Abstracts\Redis as AbstractRedis;
+use Endeveit\Cache\Abstracts\Common;
 use Endeveit\Cache\Exception;
 
 /**
@@ -18,12 +18,14 @@ use Endeveit\Cache\Exception;
  * The implementation of consistent hashring taken from Rediska project
  *  https://github.com/Shumkov/Rediska/blob/master/library/Rediska/KeyDistributor/ConsistentHashing.php
  */
-class Redis extends AbstractRedis
+class Redis extends Common
 {
 
+    const DEFAULT_PORT = 6379;
+    const DEFAULT_TIMEOUT = 0.0;
     const DEFAULT_WEIGHT = 1;
 
-    protected $options = array();
+    protected $connectionsOptions = array();
     protected $connections = array();
 
     protected $backendsWeights = array();
@@ -44,44 +46,45 @@ class Redis extends AbstractRedis
     protected $hashringIsInitialized = false;
 
     /**
-     * The class constructor.
+     * {@inheritdoc}
      *
-     * @param  integer         $localCacheSize
-     * @param  string          $prefix
-     * @throws \LogicException
-     */
-    public function __construct($localCacheSize = 256, $prefix = '')
-    {
-        if (!extension_loaded('redis')) {
-            throw new \LogicException('The redis extension is needed to use this cache adapter');
-        }
-
-        $this->localCacheSize   = intval($localCacheSize);
-        $this->identifierPrefix = $prefix;
-    }
-
-    /**
-     * Adds new connection to connections pool.
+     * Additional options:
+     *  "local_cache_size" => the size of local cache
+     *  "servers"          => array with connections parameters
+     *                        array(
+     *                          array('host' => '127.0.0.1', 'port' => 6379, 'timeout' => 0.0, 'weight' => 2),
+     *                          array('host' => '127.0.0.1', 'port' => 6380, 'timeout' => 0.0, 'weight' => 1),
+     *                          array('host' => '127.0.0.1', 'port' => 6381, 'timeout' => 0.0, 'weight' => 1),
+     *                        )
      *
-     * @param  string                    $host
-     * @param  integer                   $port
-     * @param  float                     $timeout
-     * @param  integer                   $weight
+     * @param  array                     $options
      * @throws \Endeveit\Cache\Exception
      */
-    public function addConnection($host, $port = 6379, $timeout = 0.0, $weight = self::DEFAULT_WEIGHT)
+    public function __construct(array $options = array())
     {
-        $key = crc32(json_encode(array($host, $port)));
-        if (isset($this->backendsWeights[$key])) {
-            throw new Exception('Connection with the same parameters already exists.');
+        if (array_key_exists('local_cache_size', $options)) {
+            $this->localCacheSize = intval($options['local_cache_size']);
+            unset($options['local_cache_size']);
         }
 
-        $this->backendsWeights[$key] = $weight;
-        $this->options[$key] = array($host, $port, $timeout);
+        if (!array_key_exists('servers', $options) || !is_array($options['servers'])) {
+            throw new Exception('You must provide option "servers" with array of connections parameters');
+        }
 
-        $this->nbBackends++;
+        parent::__construct($options);
 
-        $this->hashringIsInitialized = false;
+        foreach ($this->getOption('servers') as $server) {
+            if (!array_key_exists('host', $server)) {
+                throw new Exception('You must provide host in connection parameters');
+            }
+
+            $this->addConnection(
+                $server['host'],
+                array_key_exists('port', $server) ? intval($server['port']) : self::DEFAULT_PORT,
+                array_key_exists('timeout', $server) ? floatval($server['timeout']) : self::DEFAULT_TIMEOUT,
+                array_key_exists('weight', $server) ? intval($server['weight']) : self::DEFAULT_WEIGHT
+            );
+        }
     }
 
     /**
@@ -93,16 +96,43 @@ class Redis extends AbstractRedis
      */
     public function increment($id, $value = 1)
     {
-        $id         = $this->getPrefixedIdentifier($id);
-        $connection = $this->getConnection($id);
+        return $this->getConnection($id)->incrBy($id, $value);
+    }
 
-        if (!$connection->exists($id)) {
-            $connection->hSet($id, 'data', $value);
+    /**
+     * {@inheritdoc}
+     *
+     * @param  string  $id
+     * @param  integer $value
+     * @return integer
+     */
+    public function decrement($id, $value = 1)
+    {
+        return $this->getConnection($id)->decrBy($id, $value);
+    }
 
-            return $value;
+    /**
+     * Adds new connection to connections pool.
+     *
+     * @param  string                    $host
+     * @param  integer                   $port
+     * @param  float                     $timeout
+     * @param  integer                   $weight
+     * @throws \Endeveit\Cache\Exception
+     */
+    protected function addConnection($host, $port, $timeout, $weight)
+    {
+        $key = crc32(json_encode(array($host, $port)));
+        if (isset($this->backendsWeights[$key])) {
+            throw new Exception('Connection with the same parameters already exists.');
         }
 
-        return $connection->hIncrBy($id, 'data', $value);
+        $this->backendsWeights[$key] = $weight;
+        $this->connectionOptions[$key] = array($host, $port, $timeout);
+
+        $this->nbBackends++;
+
+        $this->hashringIsInitialized = false;
     }
 
     /**
@@ -113,17 +143,11 @@ class Redis extends AbstractRedis
      */
     protected function doLoad($id)
     {
-        $id     = $this->getPrefixedIdentifier($id);
-        $result = $this->getConnection($id)->hGet($id, 'data');
+        $result = false;
+        $source = $this->getConnection($id)->get($id);
 
-        if (!empty($result) && (is_string($result) && strlen($result) > 1) || is_numeric($result)) {
-            if (is_numeric($result)) {
-                $result = intval($result);
-            } else {
-                $result = unserialize($result);
-            }
-        } else {
-            $result = false;
+        if (!empty($source) && is_string($source)) {
+            $result = unserialize($source);
         }
 
         return $result;
@@ -137,13 +161,12 @@ class Redis extends AbstractRedis
      */
     protected function doLoadMany(array $identifiers)
     {
-        $result   = array();
-        $prefixed = array_map(array($this, 'getPrefixedIdentifier'), $identifiers);
+        $result = array();
 
-        foreach ($prefixed as $identifier) {
-            $row = $this->getConnection($identifier)->hGet($identifier, 'data');
+        foreach ($identifiers as $identifier) {
+            $row = $this->getConnection($identifier)->get($identifier);
             $id  = $this->getIdentifierWithoutPrefix($identifier);
-            if (!empty($row) && is_string($row) && strlen($row) > 1) {
+            if (!empty($row) && is_string($row)) {
                 $result[$id] = unserialize($row);
             } else {
                 $result[$id] = false;
@@ -156,61 +179,48 @@ class Redis extends AbstractRedis
     /**
      * {@inheritdoc}
      *
-     * @param  mixed           $data
-     * @param  string          $id
-     * @param  array           $tags
-     * @param  integer|boolean $lifetime
-     * @return boolean
+     * @param  string      $id
+     * @return mixed|false
      */
-    protected function doSave($data, $id, array $tags = array(), $lifetime = false)
+    protected function doLoadRaw($id)
     {
-        $id       = $this->getPrefixedIdentifier($id);
-        $dataPipe = $this->getConnection($id)->multi();
+        $result = $this->getConnection($id)->get($id);
 
-        // Store the data in redis hash «data» and «tags» fields
-        $dataPipe->hSet($id, 'data', serialize($data));
-        $dataPipe->hset($id, 'tags', serialize($tags));
-
-        $lifetime = $this->getFinalLifetime($lifetime);
-        if ($lifetime > 0) {
-            $dataPipe->expire($id, $lifetime);
-        } else {
-            $dataPipe->expire($id, self::MAX_LIFETIME);
-        }
-
-        // Store the tags
-        if (!empty($tags) && is_array($tags)) {
-            $tags = array_unique($tags);
-
-            foreach ($tags as $tag) {
-                $tag     = $this->getTagWithPrefix($tag);
-                $tagPipe = $this->getConnection($tag);
-                $tagPipe->sAdd($tag, $id);
-                $tagPipe->expire($tag, self::MAX_LIFETIME);
-                $tagPipe->exec();
-            }
-        }
-
-        $dataPipe->exec();
-
-        return true;
+        return !empty($result) ? $result : false;
     }
 
     /**
      * {@inheritdoc}
      *
+     * @param  mixed   $data
      * @param  string  $id
+     * @param  array   $tags
      * @return boolean
      */
-    protected function doRemove($id)
+    protected function doSave($data, $id, array $tags = array())
     {
-        $id   = $this->getPrefixedIdentifier($id);
-        $con  = $this->getConnection($id);
+        $result = $this->getConnection($id)->set($id, serialize($data));
 
-        // Remove the identifier
-        $con->del($id);
+        if (!empty($tags)) {
+            foreach (array_unique($tags) as $tag) {
+                $this->getConnection($tag)->sAdd($tag, $id);
+            }
+        }
 
-        return true;
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  scalar          $data
+     * @param  string          $id
+     * @param  integer|boolean $lifetime
+     * @return boolean
+     */
+    protected function doSaveScalar($data, $id, $lifetime = false)
+    {
+        return $this->getConnection($id)->set($id, $data, $lifetime);
     }
 
     /**
@@ -222,7 +232,7 @@ class Redis extends AbstractRedis
     protected function doRemoveByTags(array $tags)
     {
         foreach (array_unique($tags) as $tag) {
-            $tag  = $this->getTagWithPrefix($tag);
+            $tag  = $this->getPrefixedTag($tag);
             $con  = $this->getConnection($tag);
             $keys = $con->sMembers($tag);
 
@@ -241,55 +251,15 @@ class Redis extends AbstractRedis
     /**
      * {@inheritdoc}
      *
-     * @param  string  $id
-     * @param  integer $extraLifetime
-     * @return boolean
-     */
-    protected function doTouch($id, $extraLifetime)
-    {
-        $id     = $this->getPrefixedIdentifier($id);
-        $con    = $this->getConnection($id);
-        $result = $con->ttl($id);
-
-        if ($result && is_integer($result) && $result > 0) {
-            $con->expire($id, $result + $extraLifetime);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
      * @return boolean
      */
     protected function doFlush()
     {
-        foreach (array_keys($this->options) as $key) {
+        foreach (array_keys($this->connectionOptions) as $key) {
             $this->getRedisObject($key)->flushDB();
         }
 
         return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @return integer
-     */
-    protected function getValueForIncrementOrDecrement($id)
-    {
-        $id    = $this->getPrefixedIdentifier($id);
-        $value = $this->getConnection($id)->hGet($id, 'data');
-
-        if (!$value || !is_numeric($value)) {
-            $value = 0;
-        }
-
-        return $value;
     }
 
     /**
@@ -373,7 +343,7 @@ class Redis extends AbstractRedis
             }
         }
 
-        if (null === $return || !array_key_exists($return, $this->options)) {
+        if (null === $return || !array_key_exists($return, $this->connectionOptions)) {
             throw new \RuntimeException('Unable to determine connection or it\'s options.');
         }
 
@@ -391,9 +361,9 @@ class Redis extends AbstractRedis
         if (!array_key_exists($key, $this->connections)) {
             $this->connections[$key] = new \Redis();
             $this->connections[$key]->connect(
-                $this->options[$key][0],
-                $this->options[$key][1],
-                $this->options[$key][2]
+                $this->connectionOptions[$key][0],
+                $this->connectionOptions[$key][1],
+                $this->connectionOptions[$key][2]
             );
         }
 
