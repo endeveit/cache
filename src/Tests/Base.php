@@ -12,7 +12,14 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      *
      * @var \Endeveit\Cache\Interfaces\Driver
      */
-    protected $driver;
+    protected $driver = null;
+
+    /**
+     * Entries lifetime.
+     *
+     * @var integer
+     */
+    protected $lifetime = 2;
 
     /**
      * Array with random generated identifiers.
@@ -37,6 +44,39 @@ abstract class Base extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($this->saveInCache($identifier));
         $this->assertEquals($this->getDataForIdentifier($identifier), $this->driver->load($identifier));
+    }
+
+    /**
+     * @see \Endeveit\Cache\Interfaces\Driver::load()
+     */
+    public function testExpired()
+    {
+        $identifier = $this->getRandomIdentifier();
+
+        $this->assertTrue($this->saveInCache($identifier));
+
+        sleep($this->lifetime + 1);
+
+        $this->assertFalse($this->driver->load($identifier));
+    }
+
+    /**
+     * @see \Endeveit\Cache\Interfaces\Driver::load()
+     */
+    public function testExpiredWithCallback()
+    {
+        $identifier = $this->getRandomIdentifier();
+
+        $this->assertTrue($this->saveInCache($identifier));
+
+        sleep($this->lifetime + 1);
+
+        $callback = function () {
+            return true;
+        };
+
+        $this->assertTrue($this->driver->load($identifier, $callback));
+        $this->assertTrue($this->driver->load($identifier));
     }
 
     /**
@@ -192,7 +232,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
             $this->getDataForIdentifier($identifier),
             $identifier,
             array($this->cacheIdentifiersTags[$identifier]),
-            300
+            $this->lifetime
         );
     }
 

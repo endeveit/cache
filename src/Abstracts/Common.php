@@ -38,10 +38,9 @@ abstract class Common implements Driver
     /**
      * Class constructor.
      * Available options:
-     *  "lock_suffix"  => suffix for read lock key
-     *  "lock_timeout" => read lock timeout
-     *  "prefix_id"    => prefix for cache keys
-     *  "prefix_tag"   => prefix for cache tags
+     *  "lock_suffix" => suffix for read lock key
+     *  "prefix_id"   => prefix for cache keys
+     *  "prefix_tag"  => prefix for cache tags
      *
      * @param array $options
      */
@@ -55,11 +54,12 @@ abstract class Common implements Driver
      *
      * @param  string          $id
      * @param  callable        $cbGenerateData
+     * @param  integer         $cbLockTimeout
      * @param  array           $tags
      * @param  integer|boolean $lifetime
      * @return mixed|false     Data on success, false on failure
      */
-    public function load($id, $cbGenerateData = null, array $tags = array(), $lifetime = false)
+    public function load($id, $cbGenerateData = null, $cbLockTimeout = null, array $tags = array(), $lifetime = false)
     {
         $result = false;
         $source = $this->doLoad($this->getPrefixedIdentifier($id));
@@ -68,18 +68,27 @@ abstract class Common implements Driver
             $now    = time();
             $result = $source['data'];
 
-            if (array_key_exists('expiresAt', $source)
-                && ($source['expiresAt'] < $now)
-                && (null !== $cbGenerateData)
-                && is_callable($cbGenerateData)) {
-                $lockId = $id . $this->getOption('lock_suffix');
+            if (array_key_exists('expiresAt', $source)) {
+                if ($source['expiresAt'] < $now) {
+                    if ((null !== $cbGenerateData) && is_callable($cbGenerateData)) {
+                        $lockId = $this->getPrefixedIdentifier($id . $this->getOption('lock_suffix'));
 
-                if (!$this->contains($lockId)) {
-                    $this->doSaveScalar(1, $lockId, $this->getOption('lock_timeout'));
+                        if (!$this->contains($lockId)) {
+                            $this->doSaveScalar(
+                                1,
+                                $lockId,
+                                (null !== $cbLockTimeout
+                                    ? intval($cbLockTimeout)
+                                    : false)
+                            );
 
-                    $result = call_user_func($cbGenerateData);
+                            $result = call_user_func($cbGenerateData);
 
-                    $this->save($result, $id, $tags, $lifetime);
+                            $this->save($result, $id, $tags, $lifetime);
+                        }
+                    } else {
+                        $result = false;
+                    }
                 }
             }
         }

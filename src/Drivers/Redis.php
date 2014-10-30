@@ -96,6 +96,8 @@ class Redis extends Common
      */
     public function increment($id, $value = 1)
     {
+        $id = $this->getPrefixedIdentifier($id);
+
         return $this->getConnection($id)->incrBy($id, $value);
     }
 
@@ -108,6 +110,8 @@ class Redis extends Common
      */
     public function decrement($id, $value = 1)
     {
+        $id = $this->getPrefixedIdentifier($id);
+
         return $this->getConnection($id)->decrBy($id, $value);
     }
 
@@ -220,7 +224,14 @@ class Redis extends Common
      */
     protected function doSaveScalar($data, $id, $lifetime = false)
     {
-        return $this->getConnection($id)->set($id, $data, $lifetime);
+        $con    = $this->getConnection($id);
+        $result = $con->set($id, $data);
+
+        if (false !== $lifetime) {
+            $con->expire($id, $lifetime);
+        }
+
+        return $result;
     }
 
     /**

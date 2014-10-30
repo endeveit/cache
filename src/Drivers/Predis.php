@@ -122,7 +122,7 @@ class Predis extends Common
     {
         $result = $this->getOption('client')->get($id);
 
-        return !empty($result) ? $result : false;
+        return !empty($result) ? unserialize($result) : false;
     }
 
     /**
@@ -161,7 +161,18 @@ class Predis extends Common
      */
     protected function doSaveScalar($data, $id, $lifetime = false)
     {
-        return $this->getOption('client')->set($id, $data, null, $lifetime);
+        $result = false;
+
+        try {
+            $result = $this->getOption('client')->set($id, serialize($data));
+
+            if (false !== $lifetime) {
+                $result = $this->getOption('client')->expire($id, $lifetime);
+            }
+        } catch (\Exception $e) {
+        }
+
+        return $result;
     }
 
     /**
