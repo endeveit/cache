@@ -16,6 +16,6 @@ class XCacheTest extends Base
      */
     protected function getDriver()
     {
-        return new Driver(array('prefix_id' => 'PHPUnit_'));
+        return extension_loaded('xcache') ? new Driver(array('prefix_id' => 'PHPUnit_')) : null;
     }
 }

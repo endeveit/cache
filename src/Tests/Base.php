@@ -132,7 +132,11 @@ abstract class Base extends \PHPUnit_Framework_TestCase
     {
         $this->driver = $this->getDriver();
 
-        $this->generateIdentifiers();
+        if (null === $this->driver) {
+            $this->markTestSkipped('Cache driver is empty');
+        } else {
+            $this->generateIdentifiers();
+        }
     }
 
     /**
