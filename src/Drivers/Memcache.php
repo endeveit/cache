@@ -44,9 +44,7 @@ class Memcache extends Common
         }
 
         if (array_key_exists('compress', $options) && $options['compress']) {
-            $options['compress'] = intval(\MEMCACHE_COMPRESSED);
-        } else {
-            $options['compress'] = 0;
+            $options['compress'] = MEMCACHE_COMPRESSED;
         }
 
         parent::__construct($options);
@@ -111,7 +109,7 @@ class Memcache extends Common
      */
     protected function doLoad($id)
     {
-        $result = $this->getOption('client')->get($id, $this->getOption('compress'));
+        $result = $this->getOption('client')->get($id, $this->getOption('compress', 0));
 
         if (is_array($result) && isset($result[0])) {
             return $result[0];
@@ -130,7 +128,7 @@ class Memcache extends Common
     {
         $result = array();
 
-        foreach ($this->getOption('client')->get($identifiers, $this->getOption('compress')) as $id => $row) {
+        foreach ($this->getOption('client')->get($identifiers, $this->getOption('compress', 0)) as $id => $row) {
             if (is_array($row) && isset($row[0])) {
                 $result[$this->getIdentifierWithoutPrefix($id)] = $row[0];
             }
@@ -149,7 +147,7 @@ class Memcache extends Common
      */
     protected function doLoadRaw($id)
     {
-        return $this->getOption('client')->get($id, $this->getOption('compress'));
+        return $this->getOption('client')->get($id, $this->getOption('compress', 0));
     }
 
     /**
@@ -168,7 +166,7 @@ class Memcache extends Common
             $this->saveTagsForId($id, $tags);
         }
 
-        return $this->getOption('client')->set($id, array($data), $this->getOption('compress'));
+        return $this->getOption('client')->set($id, array($data), $this->getOption('compress', 0));
     }
 
     /**
@@ -181,7 +179,7 @@ class Memcache extends Common
      */
     protected function doSaveScalar($data, $id, $lifetime = false)
     {
-        return $this->getOption('client')->set($id, $data, $this->getOption('compress'), $lifetime);
+        return $this->getOption('client')->set($id, $data, $this->getOption('compress', 0), $lifetime);
     }
 
     /**
