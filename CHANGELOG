@@ -3,6 +3,7 @@
  - Method "load" now accepts arguments to generate data when cache expired
  - Entries now never expires instead when cache entry expired library returns expired data and attempts to generate new data
  - Temporarily removed PDO and MongoDB drivers
+ - Added driver for APC (http://php.net/apc)
  - Autoloading was changed to PSR-4
  - New tests
 
