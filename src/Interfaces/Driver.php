@@ -16,15 +16,14 @@ interface Driver
 
     /**
      * Returns an item.
+     * If $lockTimeout is provided, library will check for lock related to key $id.
+     * If lock is found, library will return old data. If not then library will set lock and returns false.
      *
-     * @param  string          $id
-     * @param  callable        $cbGenerateData
-     * @param  integer         $cbLockTimeout
-     * @param  array           $tags
-     * @param  integer|boolean $lifetime
-     * @return mixed|false     Data on success, false on failure
+     * @param  string       $id
+     * @param  integer|null $lockTimeout
+     * @return mixed|false  Data on success, false on failure
      */
-    public function load($id, $cbGenerateData = null, $cbLockTimeout = null, array $tags = array(), $lifetime = false);
+    public function load($id, $lockTimeout = null);
 
     /**
      * Returns many items at once.

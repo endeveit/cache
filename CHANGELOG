@@ -1,6 +1,6 @@
 1.0.0
  - Signature of all constructors was unified
- - Method "load" now accepts arguments to generate data when cache expired
+ - Method "load" now accepts arguments to set lock for entry key when cache is expired
  - Entries now never expires instead when cache entry expired library returns expired data and attempts to generate new data
  - Temporarily removed PDO and MongoDB drivers
  - Added driver for APC (http://php.net/apc)

@@ -22,6 +22,7 @@ class XCache extends Memcache
      */
     public function __construct(array $options = array())
     {
+        $this->options = array_merge($this->defaultOptions, $options);
     }
 
     /**
@@ -56,7 +57,7 @@ class XCache extends Memcache
      */
     protected function doLoad($id)
     {
-        $result = xcache_get($this->getPrefixedIdentifier($id));
+        $result = xcache_get($id);
 
         if (is_array($result) && isset($result[0])) {
             return $result[0];
@@ -114,10 +115,7 @@ class XCache extends Memcache
             $this->saveTagsForId($id, $tags);
         }
 
-        return xcache_set(
-            $this->getPrefixedIdentifier($id),
-            array($data)
-        );
+        return xcache_set($id, array($data));
     }
 
     /**

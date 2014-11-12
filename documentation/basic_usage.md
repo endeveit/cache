@@ -24,12 +24,14 @@ Each driver requires at least connection to caching backend as a constructor par
 
 Methods of caching interface are described below.
 
-load($id, $cbGenerateData = null, $cbLockTimeout = null, array $tags = array(), $lifetime = false)
---------------------------------------------------------------------------------------------------
+load($id, $lockTimeout = null)
+------------------------------
 
 Loads previously saved data from cache and returns it. Takes mandatory argument $id which identifies value in cache storage.
 
-If $cbGenerateData is provided and cache data expired, tries to generate data with callback $cbGenerateData and put it into cache.
+If $lockTimeout is provided, library will check for lock related to key $id.
+
+If lock is found, library will return old data. If not then library will set lock and returns false.
 
 save($data, $id, array $tags = array(), $lifetime = false)
 ----------------------------------------------------------

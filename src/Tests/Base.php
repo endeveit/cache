@@ -49,7 +49,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
     /**
      * @see \Endeveit\Cache\Interfaces\Driver::load()
      */
-    public function testExpired()
+    public function testExpiredNoLock()
     {
         $identifier = $this->getRandomIdentifier();
 
@@ -57,13 +57,13 @@ abstract class Base extends \PHPUnit_Framework_TestCase
 
         sleep($this->lifetime + 1);
 
-        $this->assertFalse($this->driver->load($identifier));
+        $this->assertEquals($this->getDataForIdentifier($identifier), $this->driver->load($identifier));
     }
 
     /**
      * @see \Endeveit\Cache\Interfaces\Driver::load()
      */
-    public function testExpiredWithCallback()
+    public function testExpiredWithLock()
     {
         $identifier = $this->getRandomIdentifier();
 
@@ -71,12 +71,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
 
         sleep($this->lifetime + 1);
 
-        $callback = function () {
-            return true;
-        };
-
-        $this->assertTrue($this->driver->load($identifier, $callback));
-        $this->assertTrue($this->driver->load($identifier));
+        $this->assertFalse($this->driver->load($identifier, 10));
     }
 
     /**

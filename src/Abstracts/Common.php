@@ -52,14 +52,11 @@ abstract class Common implements Driver
     /**
      * {@inheritdoc}
      *
-     * @param  string          $id
-     * @param  callable        $cbGenerateData
-     * @param  integer         $cbLockTimeout
-     * @param  array           $tags
-     * @param  integer|boolean $lifetime
-     * @return mixed|false     Data on success, false on failure
+     * @param  string       $id
+     * @param  integer|null $lockTimeout
+     * @return mixed|false  Data on success, false on failure
      */
-    public function load($id, $cbGenerateData = null, $cbLockTimeout = null, array $tags = array(), $lifetime = false)
+    public function load($id, $lockTimeout = null)
     {
         $result = false;
         $source = $this->doLoad($this->getPrefixedIdentifier($id));
@@ -70,24 +67,15 @@ abstract class Common implements Driver
 
             if (array_key_exists('expiresAt', $source)) {
                 if ($source['expiresAt'] < $now) {
-                    if ((null !== $cbGenerateData) && is_callable($cbGenerateData)) {
+                    if (null !== $lockTimeout) {
                         $lockId = $this->getPrefixedIdentifier($id . $this->getOption('lock_suffix'));
 
                         if (!$this->contains($lockId)) {
-                            $this->doSaveScalar(
-                                1,
-                                $lockId,
-                                (null !== $cbLockTimeout
-                                    ? intval($cbLockTimeout)
-                                    : false)
-                            );
+                            // Set the lock and return false
+                            $this->doSaveScalar(1, $lockId, intval($lockTimeout));
 
-                            $result = call_user_func($cbGenerateData);
-
-                            $this->save($result, $id, $tags, $lifetime);
+                            $result = false;
                         }
-                    } else {
-                        $result = false;
                     }
                 }
             }
