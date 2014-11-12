@@ -165,15 +165,22 @@ class Redis extends Common
      */
     protected function doLoadMany(array $identifiers)
     {
-        $result = array();
+        $result        = array();
+        $nbIdentifiers = count($identifiers);
+        $nbFound       = 0;
 
-        foreach ($identifiers as $identifier) {
-            $row = $this->getConnection($identifier)->get($identifier);
-            $id  = $this->getIdentifierWithoutPrefix($identifier);
-            if (!empty($row) && is_string($row)) {
-                $result[$id] = unserialize($row);
-            } else {
-                $result[$id] = false;
+        foreach ($this->connections as $connection) {
+            /** @var \Redis $connection */
+            foreach ($connection->mGet($identifiers) as $i => $row) {
+                if ((false !== $row) && is_string($row)) {
+                    $result[$this->getIdentifierWithoutPrefix($identifiers[$i])] = unserialize($row);
+
+                    ++$nbFound;
+                }
+            }
+
+            if ($nbFound == $nbIdentifiers) {
+                break;
             }
         }
 
