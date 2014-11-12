@@ -21,6 +21,7 @@ class Apc extends Memcache
      */
     public function __construct(array $options = array())
     {
+        $this->options = array_merge($this->defaultOptions, $options);
     }
 
     /**
@@ -73,7 +74,7 @@ class Apc extends Memcache
      */
     protected function doLoad($id)
     {
-        $result = apc_fetch($this->getPrefixedIdentifier($id));
+        $result = apc_fetch($id);
 
         if (is_array($result) && isset($result[0])) {
             return $result[0];
@@ -131,10 +132,7 @@ class Apc extends Memcache
             $this->saveTagsForId($id, $tags);
         }
 
-        return apc_store(
-            $this->getPrefixedIdentifier($id),
-            array($data)
-        );
+        return apc_store($id, array($data));
     }
 
     /**
