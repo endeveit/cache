@@ -169,9 +169,8 @@ class Redis extends Common
         $nbIdentifiers = count($identifiers);
         $nbFound       = 0;
 
-        foreach ($this->connections as $connection) {
-            /** @var \Redis $connection */
-            foreach ($connection->mGet($identifiers) as $i => $row) {
+        foreach (array_keys($this->connectionOptions) as $key) {
+            foreach ($this->getRedisObject($key)->mGet($identifiers) as $i => $row) {
                 $id = $this->getIdentifierWithoutPrefix($identifiers[$i]);
 
                 if ((false !== $row) && is_string($row)) {
