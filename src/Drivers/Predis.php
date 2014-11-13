@@ -102,12 +102,14 @@ class Predis extends Common
         }
 
         foreach ($pipe->execute() as $key => $row) {
-            if (!empty($row) && is_string($row)) {
-                $result[$identifiers[$key]] = unserialize($row);
-            } else {
-                $result[$identifiers[$key]] = false;
+            $data = $this->getDataFromSerialized($row);
+
+            if (null !== $data) {
+                $result[$this->getIdentifierWithoutPrefix($identifiers[$key])] = $data;
             }
         }
+
+        $this->fillNotFoundKeys($result, $identifiers);
 
         return $result;
     }

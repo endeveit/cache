@@ -130,7 +130,7 @@ class Memcache extends Common
 
         foreach ($this->getOption('client')->get($identifiers, $this->getOption('compress', 0)) as $id => $row) {
             if (is_array($row) && isset($row[0])) {
-                $result[$this->getIdentifierWithoutPrefix($id)] = $row[0];
+                $result[$this->getIdentifierWithoutPrefix($id)] = $row[0]['data'];
             }
         }
 

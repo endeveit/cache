@@ -278,6 +278,27 @@ abstract class Common implements Driver
     }
 
     /**
+     * Returns content of key «data» in serialized entry.
+     *
+     * @param  string $serialized
+     * @return mixed
+     */
+    protected function getDataFromSerialized($serialized)
+    {
+        $result = null;
+
+        if ((false !== $serialized)
+            && is_string($serialized)
+            && ($unserialized = unserialize($serialized))
+            && is_array($unserialized)
+            && array_key_exists('data', $unserialized)) {
+            $result = $unserialized['data'];
+        }
+
+        return $result;
+    }
+
+    /**
      * Fills the not found keys with false in «loadMany» method.
      *
      * @param array $result

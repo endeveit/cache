@@ -89,6 +89,30 @@ abstract class Base extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @see \Endeveit\Cache\Interfaces\Driver::loadMany()
+     */
+    public function testLoadManyWithEmpty()
+    {
+        $identifiers = $this->getRandomIdentifiers();
+
+        foreach ($identifiers as $identifier) {
+            $this->saveInCache($identifier);
+        }
+
+        $nbFalseKeys = 0;
+
+        foreach (range(1, rand(2, 4)) as $i) {
+            $identifiers[] = 'not_existed_id_' . $i;
+            ++$nbFalseKeys;
+        }
+
+        $falseKeys = array_keys($this->driver->loadMany($identifiers), false);
+
+        $this->assertNotEmpty($falseKeys);
+        $this->assertEquals($nbFalseKeys, count($falseKeys));
+    }
+
+    /**
      * @see \Endeveit\Cache\Interfaces\Driver::remove()
      */
     public function testRemove()

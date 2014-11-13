@@ -171,14 +171,13 @@ class Redis extends Common
 
         foreach (array_keys($this->connectionOptions) as $key) {
             foreach ($this->getRedisObject($key)->mGet($identifiers) as $i => $row) {
-                $id = $this->getIdentifierWithoutPrefix($identifiers[$i]);
+                $id   = $this->getIdentifierWithoutPrefix($identifiers[$i]);
+                $data = $this->getDataFromSerialized($row);
 
-                if ((false !== $row) && is_string($row)) {
-                    $result[$id] = unserialize($row);
+                if (null !== $data) {
+                    $result[$id] = $data;
 
                     ++$nbFound;
-                } else {
-                    $result[$id] = false;
                 }
             }
 
@@ -186,6 +185,8 @@ class Redis extends Common
                 break;
             }
         }
+
+        $this->fillNotFoundKeys($result, $identifiers);
 
         return $result;
     }

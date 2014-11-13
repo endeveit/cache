@@ -63,7 +63,7 @@ class Memcached extends Memcache
 
         foreach ($this->getOption('client')->getMulti($identifiers) as $id => $row) {
             if (is_array($row) && isset($row[0])) {
-                $result[$this->getIdentifierWithoutPrefix($id)] = $row[0];
+                $result[$this->getIdentifierWithoutPrefix($id)] = $row[0]['data'];
             }
         }
 
