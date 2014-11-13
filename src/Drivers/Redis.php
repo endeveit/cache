@@ -172,10 +172,14 @@ class Redis extends Common
         foreach ($this->connections as $connection) {
             /** @var \Redis $connection */
             foreach ($connection->mGet($identifiers) as $i => $row) {
+                $id = $this->getIdentifierWithoutPrefix($identifiers[$i]);
+
                 if ((false !== $row) && is_string($row)) {
-                    $result[$this->getIdentifierWithoutPrefix($identifiers[$i])] = unserialize($row);
+                    $result[$id] = unserialize($row);
 
                     ++$nbFound;
+                } else {
+                    $result[$id] = false;
                 }
             }
 
