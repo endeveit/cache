@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DIR=$(readlink -enq $(dirname $0))
-PHPINI="~/.phpenv/versions/$(phpenv version-name)/etc/php.ini"
+PHPINI="~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini"
 
 sudo apt-get -qq update &
 

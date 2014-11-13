@@ -95,8 +95,9 @@ class Apc extends Memcache
 
         foreach ($identifiers as $id) {
             $data = apc_fetch($id);
+
             if (is_array($data) && isset($data[0])) {
-                $result[$this->getIdentifierWithoutPrefix($id)] = $data[0];
+                $result[$this->getIdentifierWithoutPrefix($id)] = $data[0]['data'];
             }
         }
 
