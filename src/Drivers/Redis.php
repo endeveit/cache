@@ -15,7 +15,7 @@ use Endeveit\Cache\Exception;
  * Driver that stores data in Redis and uses \Redis extension
  * to work with it.
  *
- * The implementation of consistent hashring taken from Rediska project
+ * The implementation of consistent hashring was taken from Rediska project
  *  https://github.com/Shumkov/Rediska/blob/master/library/Rediska/KeyDistributor/ConsistentHashing.php
  */
 class Redis extends Common

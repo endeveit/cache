@@ -4,6 +4,7 @@
  * file that was distributed with this source code.
  *
  * @author Igor Borodikhin <iborodikhin@gmail.com>
+ * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
 namespace Endeveit\Cache\Drivers;
