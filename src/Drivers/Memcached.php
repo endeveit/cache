@@ -44,8 +44,8 @@ class Memcached extends Memcache
     {
         $result = $this->getOption('client')->get($id);
 
-        if (is_array($result) && isset($result[0])) {
-            return $result[0];
+        if (!empty($result) && is_array($result)) {
+            return $result;
         }
 
         return false;
@@ -61,9 +61,9 @@ class Memcached extends Memcache
     {
         $result = array();
 
-        foreach ($this->getOption('client')->getMulti($identifiers) as $id => $row) {
-            if (is_array($row) && isset($row[0])) {
-                $result[$this->getIdentifierWithoutPrefix($id)] = $row[0]['data'];
+        foreach ($this->getOption('client')->getMulti($identifiers) as $id => $entry) {
+            if (!empty($entry) && is_array($entry)) {
+                $result[$this->getIdentifierWithoutPrefix($id)] = $entry['data'];
             }
         }
 
@@ -99,7 +99,7 @@ class Memcached extends Memcache
             $this->saveTagsForId($id, $tags);
         }
 
-        return $this->getOption('client')->set($id, array($data));
+        return $this->getOption('client')->set($id, $data);
     }
 
     /**

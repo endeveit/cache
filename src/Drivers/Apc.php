@@ -76,8 +76,8 @@ class Apc extends Memcache
     {
         $result = apc_fetch($id);
 
-        if (is_array($result) && isset($result[0])) {
-            return $result[0];
+        if (!empty($result) && is_array($result)) {
+            return $result;
         }
 
         return false;
@@ -96,8 +96,8 @@ class Apc extends Memcache
         foreach ($identifiers as $id) {
             $data = apc_fetch($id);
 
-            if (is_array($data) && isset($data[0])) {
-                $result[$this->getIdentifierWithoutPrefix($id)] = $data[0]['data'];
+            if (!empty($data) && is_array($data)) {
+                $result[$this->getIdentifierWithoutPrefix($id)] = $data['data'];
             }
         }
 

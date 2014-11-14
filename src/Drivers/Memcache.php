@@ -111,8 +111,8 @@ class Memcache extends Common
     {
         $result = $this->getOption('client')->get($id, $this->getOption('compress', 0));
 
-        if (is_array($result) && isset($result[0])) {
-            return $result[0];
+        if (!empty($result) && is_array($result)) {
+            return $result;
         }
 
         return false;
@@ -128,9 +128,9 @@ class Memcache extends Common
     {
         $result = array();
 
-        foreach ($this->getOption('client')->get($identifiers, $this->getOption('compress', 0)) as $id => $row) {
-            if (is_array($row) && isset($row[0])) {
-                $result[$this->getIdentifierWithoutPrefix($id)] = $row[0]['data'];
+        foreach ($this->getOption('client')->get($identifiers, $this->getOption('compress', 0)) as $id => $entry) {
+            if (!empty($entry) && is_array($entry)) {
+                $result[$this->getIdentifierWithoutPrefix($id)] = $entry['data'];
             }
         }
 
@@ -166,7 +166,7 @@ class Memcache extends Common
             $this->saveTagsForId($id, $tags);
         }
 
-        return $this->getOption('client')->set($id, array($data), $this->getOption('compress', 0));
+        return $this->getOption('client')->set($id, $data, $this->getOption('compress', 0));
     }
 
     /**

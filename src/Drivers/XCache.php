@@ -59,8 +59,8 @@ class XCache extends Memcache
     {
         $result = xcache_get($id);
 
-        if (is_array($result) && isset($result[0])) {
-            return $result[0];
+        if (!empty($result) && is_array($result)) {
+            return $result;
         }
 
         return false;
@@ -79,8 +79,8 @@ class XCache extends Memcache
         foreach ($identifiers as $id) {
             $data = xcache_get($id);
 
-            if (is_array($data) && isset($data[0])) {
-                $result[$this->getIdentifierWithoutPrefix($id)] = $data[0]['data'];
+            if (!empty($data) && is_array($data)) {
+                $result[$this->getIdentifierWithoutPrefix($id)] = $data['data'];
             }
         }
 
@@ -116,7 +116,7 @@ class XCache extends Memcache
             $this->saveTagsForId($id, $tags);
         }
 
-        return xcache_set($id, array($data));
+        return xcache_set($id, $data);
     }
 
     /**
