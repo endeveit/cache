@@ -1,5 +1,7 @@
-Cache library [![Build Status](https://travis-ci.org/endeveit/cache.png?branch=v0.2)](https://travis-ci.org/endeveit/cache)
+Cache library
 =============
+
+[![Build Status](https://travis-ci.org/endeveit/cache.png?branch=v1.0.0)](https://travis-ci.org/endeveit/cache) [![Latest Stable Version](https://poser.pugx.org/endeveit/cache/v/stable.svg)](https://packagist.org/packages/endeveit/cache) [![Total Downloads](https://poser.pugx.org/endeveit/cache/downloads.svg)](https://packagist.org/packages/endeveit/cache) [![Latest Unstable Version](https://poser.pugx.org/endeveit/cache/v/unstable.svg)](https://packagist.org/packages/endeveit/cache) [![License](https://poser.pugx.org/endeveit/cache/license.svg)](https://packagist.org/packages/endeveit/cache)
 
 Simple caching library with support for tags.
 
