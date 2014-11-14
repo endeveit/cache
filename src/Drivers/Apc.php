@@ -133,7 +133,7 @@ class Apc extends Memcache
             $this->saveTagsForId($id, $tags);
         }
 
-        return apc_store($id, array($data));
+        return apc_store($id, $data);
     }
 
     /**
