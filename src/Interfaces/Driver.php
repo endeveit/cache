@@ -16,11 +16,14 @@ interface Driver
 
     /**
      * Returns an item.
+     * If $lockTimeout is provided, library will check for lock related to key $id.
+     * If lock is found, library will return old data. If not then library will set lock and returns false.
      *
-     * @param  string      $id
-     * @return mixed|false Data on success, false on failure
+     * @param  string       $id
+     * @param  integer|null $lockTimeout
+     * @return mixed|false  Data on success, false on failure
      */
-    public function load($id);
+    public function load($id, $lockTimeout = null);
 
     /**
      * Returns many items at once.
@@ -77,6 +80,14 @@ interface Driver
     public function increment($id, $value = 1);
 
     /**
+     * Test if an entry exists in the cache.
+     *
+     * @param  string  $id
+     * @return boolean
+     */
+    public function contains($id);
+
+    /**
      * Decreases a value.
      * Returns item's new value on success or false on failure.
      *
@@ -85,14 +96,6 @@ interface Driver
      * @return integer
      */
     public function decrement($id, $value = 1);
-
-    /**
-     * Test if an entry exists in the cache.
-     *
-     * @param  string  $id
-     * @return boolean
-     */
-    public function contains($id);
 
     /**
      * Drops all items from cache.

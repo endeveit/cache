@@ -16,9 +16,12 @@ class RedisTest extends Base
      */
     protected function getDriver()
     {
-        $driver = new Driver(64, 'PHPUnit_');
-        $driver->addConnection('127.0.0.1');
-
-        return $driver;
+        return new Driver(array(
+            'servers'          => array(
+                array('host' => '127.0.0.1'),
+            ),
+            'local_cache_size' => 64,
+            'prefix_id'        => 'PHPUnit_',
+        ));
     }
 }

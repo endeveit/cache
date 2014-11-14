@@ -12,7 +12,14 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      *
      * @var \Endeveit\Cache\Interfaces\Driver
      */
-    protected $driver;
+    protected $driver = null;
+
+    /**
+     * Entries lifetime.
+     *
+     * @var integer
+     */
+    protected $lifetime = 2;
 
     /**
      * Array with random generated identifiers.
@@ -40,6 +47,34 @@ abstract class Base extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @see \Endeveit\Cache\Interfaces\Driver::load()
+     */
+    public function testExpiredNoLock()
+    {
+        $identifier = $this->getRandomIdentifier();
+
+        $this->assertTrue($this->saveInCache($identifier));
+
+        sleep($this->lifetime + 1);
+
+        $this->assertEquals($this->getDataForIdentifier($identifier), $this->driver->load($identifier));
+    }
+
+    /**
+     * @see \Endeveit\Cache\Interfaces\Driver::load()
+     */
+    public function testExpiredWithLock()
+    {
+        $identifier = $this->getRandomIdentifier();
+
+        $this->assertTrue($this->saveInCache($identifier));
+
+        sleep($this->lifetime + 1);
+
+        $this->assertFalse($this->driver->load($identifier, 10));
+    }
+
+    /**
      * @see \Endeveit\Cache\Interfaces\Driver::loadMany()
      */
     public function testLoadMany()
@@ -51,6 +86,30 @@ abstract class Base extends \PHPUnit_Framework_TestCase
         }
 
         $this->assertFalse(array_search(false, $this->driver->loadMany($identifiers)));
+    }
+
+    /**
+     * @see \Endeveit\Cache\Interfaces\Driver::loadMany()
+     */
+    public function testLoadManyWithEmpty()
+    {
+        $identifiers = $this->getRandomIdentifiers();
+
+        foreach ($identifiers as $identifier) {
+            $this->saveInCache($identifier);
+        }
+
+        $nbFalseKeys = 0;
+
+        foreach (range(1, rand(2, 4)) as $i) {
+            $identifiers[] = 'not_existed_id_' . $i;
+            ++$nbFalseKeys;
+        }
+
+        $falseKeys = array_keys($this->driver->loadMany($identifiers), false);
+
+        $this->assertNotEmpty($falseKeys);
+        $this->assertEquals($nbFalseKeys, count($falseKeys));
     }
 
     /**
@@ -132,7 +191,11 @@ abstract class Base extends \PHPUnit_Framework_TestCase
     {
         $this->driver = $this->getDriver();
 
-        $this->generateIdentifiers();
+        if (null === $this->driver) {
+            $this->markTestSkipped('Cache driver is empty');
+        } else {
+            $this->generateIdentifiers();
+        }
     }
 
     /**
@@ -188,7 +251,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
             $this->getDataForIdentifier($identifier),
             $identifier,
             array($this->cacheIdentifiersTags[$identifier]),
-            300
+            $this->lifetime
         );
     }
 

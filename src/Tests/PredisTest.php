@@ -17,8 +17,10 @@ class PredisTest extends Base
      */
     protected function getDriver()
     {
-        $client = new Client(array('host' => '127.0.0.1'), array('prefix' => 'PHPUnit_'));
+        $client = new Client(array(
+            'host' => '127.0.0.1'
+        ));
 
-        return new Driver($client);
+        return new Driver(array('client' => $client, 'prefix_id' => 'PHPUnit_'));
     }
 }

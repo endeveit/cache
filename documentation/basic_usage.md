@@ -13,7 +13,7 @@ require "cache/vendor/autoload.php";
 $memcache = new Memcache();
 $memcache->addServer('10.0.0.1', 11211);
 $memcache->addServer('10.0.0.2', 11211);
-$cache = new Endeveit\Cache\Drivers\Memcache($memcache);
+$cache = new Endeveit\Cache\Drivers\Memcache(array('client' => $memcache));
 $cache->save($someData, $someKey, $tagsList, $lifeTime);
 var_dump($cache->load($someKey));
 ```
@@ -24,10 +24,14 @@ Each driver requires at least connection to caching backend as a constructor par
 
 Methods of caching interface are described below.
 
-load($id)
----------
+load($id, $lockTimeout = null)
+------------------------------
 
 Loads previously saved data from cache and returns it. Takes mandatory argument $id which identifies value in cache storage.
+
+If $lockTimeout is provided, library will check for lock related to key $id.
+
+If lock is found, library will return old data. If not then library will set lock and returns false.
 
 save($data, $id, array $tags = array(), $lifetime = false)
 ----------------------------------------------------------
@@ -73,8 +77,4 @@ Notes on caching backend drivers
 
 For some caching backend drivers there are some limitation described in this chapter.
 
-In case of PDO backend identifiers (item id or any tag) cannot be more than 255 bytes length.
-
-When using Memcache backend identifiers should match ^[a-zA-Z0-9_]+$ regexp pattern.
-
-Mongo backend provides ensureIndex() method which creates index on collection for fast search by tags and identifiers and it should be invoked at least once at first use (it's better to invoke it every time).
+When using Memcache backend identifiers should match ^[\S]+$ regexp pattern.
