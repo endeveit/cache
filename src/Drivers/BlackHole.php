@@ -12,6 +12,7 @@ use Endeveit\Cache\Interfaces\Driver;
 
 /**
  * The stub object used only to implement the Driver interfaces.
+ * @codeCoverageIgnore
  */
 class BlackHole implements Driver
 {

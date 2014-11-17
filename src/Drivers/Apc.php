@@ -17,6 +17,7 @@ class Apc extends Memcache
     /**
      * {@inheritdoc}
      *
+     * @codeCoverageIgnore
      * @param array $options
      */
     public function __construct(array $options = array())
@@ -34,12 +35,12 @@ class Apc extends Memcache
     public function increment($id, $value = 1)
     {
         $id     = $this->getPrefixedIdentifier($id);
-        $result = apc_inc($id, $value);
+        $result = $value;
 
-        if (false === $result) {
-            if (true === apc_store($id, $value)) {
-                return $value;
-            }
+        if (apc_exists($id)) {
+            $result = apc_inc($id, $value);
+        } else {
+            $this->doSaveScalar($value, $id);
         }
 
         return $result;
@@ -55,12 +56,12 @@ class Apc extends Memcache
     public function decrement($id, $value = 1)
     {
         $id     = $this->getPrefixedIdentifier($id);
-        $result = apc_dec($id, $value);
+        $result = -$value;
 
-        if (false === $result) {
-            if (true === apc_store($id, -$value)) {
-                return -$value;
-            }
+        if (apc_exists($id)) {
+            $result = apc_dec($id, $value);
+        } else {
+            $this->doSaveScalar($result, $id);
         }
 
         return $result;

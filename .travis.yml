@@ -16,4 +16,7 @@ services:
 
 script:
   - php vendor/bin/phpcs --standard=PSR2 --encoding=utf-8 src/
-  - phpunit --configuration phpunit.xml.travisci
+  - phpunit --configuration phpunit.xml.travisci --coverage-text --coverage-clover ./build/logs/clover.xml
+
+after_script:
+  - php vendor/bin/coveralls

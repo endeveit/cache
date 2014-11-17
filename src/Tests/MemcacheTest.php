@@ -10,6 +10,16 @@ class MemcacheTest extends Base
 {
 
     /**
+     * @see \Endeveit\Cache\Drivers\Memcache::validateIdentifier()
+     */
+    public function testValidateIdentifier()
+    {
+        $this->setExpectedException('Endeveit\Cache\Exception');
+
+        $this->driver->save(true, 'id with spaces');
+    }
+
+    /**
      * {@inheritdoc}
      *
      * @return \Endeveit\Cache\Interfaces\Driver

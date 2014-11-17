@@ -18,6 +18,7 @@ class XCache extends Memcache
     /**
      * {@inheritdoc}
      *
+     * @codeCoverageIgnore
      * @param array $options
      */
     public function __construct(array $options = array())
@@ -46,7 +47,16 @@ class XCache extends Memcache
      */
     public function decrement($id, $value = 1)
     {
-        return xcache_dec($this->getPrefixedIdentifier($id), $value);
+        $id     = $this->getPrefixedIdentifier($id);
+        $result = -$value;
+
+        if (xcache_isset($id)) {
+            $result = xcache_dec($id, $value);
+        } else {
+            $this->doSaveScalar($result, $id);
+        }
+
+        return $result;
     }
 
     /**
@@ -140,9 +150,11 @@ class XCache extends Memcache
     protected function doFlush()
     {
         if (ini_get('xcache.admin.enable_auth')) {
+            // @codeCoverageIgnoreStart
             throw new \BadMethodCallException(
                 'You must set "xcache.admin.enable_auth" to "Off" in your php.ini to flush cache items.'
             );
+            // @codeCoverageIgnoreEnd
         }
 
         xcache_clear_cache(XC_TYPE_VAR, 0);
