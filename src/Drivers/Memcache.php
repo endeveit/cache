@@ -34,6 +34,7 @@ class Memcache extends Common
      *  "client"   => the instance of \Memcache object
      *  "compress" => boolean value which indicates to enable zlib compression or not
      *
+     * @codeCoverageIgnore
      * @param  array                     $options
      * @throws \Endeveit\Cache\Exception
      */

@@ -6,7 +6,7 @@ use Endeveit\Cache\Drivers\XCache as Driver;
 /**
  * Tests for \Endeveit\Cache\Drivers\XCache.
  */
-class XCacheTest extends Base
+class XCacheTest extends MemcacheTest
 {
 
     /**

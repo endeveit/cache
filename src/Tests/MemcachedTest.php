@@ -6,7 +6,7 @@ use Endeveit\Cache\Drivers\Memcached as Driver;
 /**
  * Tests for \Endeveit\Cache\Drivers\Memcached.
  */
-class MemcachedTest extends Base
+class MemcachedTest extends MemcacheTest
 {
 
     /**

@@ -57,6 +57,7 @@ class Redis extends Common
      *                          array('host' => '127.0.0.1', 'port' => 6381, 'timeout' => 0.0, 'weight' => 1),
      *                        )
      *
+     * @codeCoverageIgnore
      * @param  array                     $options
      * @throws \Endeveit\Cache\Exception
      */
@@ -118,6 +119,7 @@ class Redis extends Common
     /**
      * Adds new connection to connections pool.
      *
+     * @codeCoverageIgnore
      * @param  string                    $host
      * @param  integer                   $port
      * @param  float                     $timeout
@@ -287,6 +289,7 @@ class Redis extends Common
     /**
      * Returns connection by key name.
      *
+     * @codeCoverageIgnore
      * @param  string                    $id
      * @return \Redis
      * @throws \RuntimeException
@@ -375,6 +378,7 @@ class Redis extends Common
     /**
      * Returns \Redis object by key value.
      *
+     * @codeCoverageIgnore
      * @param  integer $key
      * @return \Redis
      */
@@ -394,6 +398,8 @@ class Redis extends Common
 
     /**
      * Initialization of hashring.
+     *
+     * @codeCoverageIgnore
      */
     private function initializeHashring()
     {
@@ -439,6 +445,8 @@ class Redis extends Common
 
     /**
      * Cleans up the local cache.
+     *
+     * @codeCoverageIgnore
      */
     private function cleanBackendsCache()
     {

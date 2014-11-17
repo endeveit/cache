@@ -1,6 +1,6 @@
 {
     "name": "endeveit/cache",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "library",
     "description": "Simple caching library with support for tags.",
     "keywords": [
@@ -30,6 +30,7 @@
     "require-dev": {
         "phpunit/phpunit": "~4.0",
         "predis/predis": ">=1.0",
+        "satooshi/php-coveralls": "~0.6",
         "squizlabs/php_codesniffer": "1.*"
     },
     "suggest": {

@@ -32,6 +32,7 @@ class Predis extends Common
      * Additional options:
      *  "client"   => the instance of \Predis\Client object
      *
+     * @codeCoverageIgnore
      * @param  array                     $options
      * @throws \Endeveit\Cache\Exception
      */

@@ -140,10 +140,28 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testTouch()
     {
+        $now        = time();
+        $touchTime  = 300;
         $identifier = $this->getRandomIdentifier();
 
         $this->assertTrue($this->saveInCache($identifier));
-        $this->assertTrue($this->driver->touch($identifier, 300));
+        $this->assertTrue($this->driver->touch($identifier, $touchTime));
+
+        $obj     = new \ReflectionObject($this->driver);
+        $method0 = $obj->getMethod('doLoadRaw');
+        $method1 = $obj->getMethod('getPrefixedIdentifier');
+        $method0->setAccessible(true);
+        $method1->setAccessible(true);
+
+        $cacheData = $method0->invoke($this->driver, $method1->invoke($this->driver, $identifier));
+
+        if (is_string($cacheData)) {
+            $cacheData = unserialize($cacheData);
+        }
+
+        $this->assertInternalType('array', $cacheData);
+        $this->assertArrayHasKey('expiresAt', $cacheData);
+        $this->assertEquals($cacheData['expiresAt'] - $touchTime, $now);
     }
 
     /**
@@ -151,7 +169,18 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testIncrement()
     {
-        $this->assertEquals(1, $this->driver->increment($this->getRandomIdentifier()));
+        $identifier = $this->getRandomIdentifier();
+
+        $this->assertEquals(1, $this->driver->increment($identifier));
+        $this->assertEquals(3, $this->driver->increment($identifier, 2));
+    }
+
+    /**
+     * @see \Endeveit\Cache\Interfaces\Driver::increment()
+     */
+    public function testIncrementNotExisted()
+    {
+        $this->assertEquals(10, $this->driver->increment('not_existed_inc', 10));
     }
 
     /**
@@ -163,6 +192,14 @@ abstract class Base extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(5, $this->driver->increment($identifier, 5));
         $this->assertEquals(2, $this->driver->decrement($identifier, 3));
+    }
+
+    /**
+     * @see \Endeveit\Cache\Interfaces\Driver::decrement()
+     */
+    public function testDecrementNotExisted()
+    {
+        $this->assertEquals(-10, $this->driver->decrement('not_existed_dec', 10));
     }
 
     /**

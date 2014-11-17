@@ -23,6 +23,7 @@ class Memcached extends Memcache
      * Additional options:
      *  "client"   => the instance of \Memcached object
      *
+     * @codeCoverageIgnore
      * @param  array                     $options
      * @throws \Endeveit\Cache\Exception
      */

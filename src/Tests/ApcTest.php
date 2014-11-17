@@ -6,7 +6,7 @@ use Endeveit\Cache\Drivers\Apc as Driver;
 /**
  * Tests for \Endeveit\Cache\Drivers\Apc.
  */
-class ApcTest extends Base
+class ApcTest extends MemcacheTest
 {
 
     /**

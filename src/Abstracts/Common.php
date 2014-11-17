@@ -151,47 +151,14 @@ abstract class Common implements Driver
      */
     public function touch($id, $extraLifetime)
     {
-        $data = $this->load($id);
+        $result = false;
+        $data   = $this->load($id);
 
         if (false !== $data) {
-            return $this->save($data, $id, array(), $extraLifetime);
+            $result = $this->save($data, $id, array(), $extraLifetime);
         }
 
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function increment($id, $value = 1)
-    {
-        $oldValue = $this->getValueForIncrementOrDecrement($id);
-        $newValue = $oldValue + intval($value);
-
-        $this->doSaveScalar($newValue, $id);
-
-        return $newValue;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param  string  $id
-     * @param  integer $value
-     * @return integer
-     */
-    public function decrement($id, $value = 1)
-    {
-        $oldValue = $this->getValueForIncrementOrDecrement($id);
-        $newValue = $oldValue - intval($value);
-
-        $this->doSaveScalar($newValue, $id);
-
-        return $newValue;
+        return $result;
     }
 
     /**
@@ -258,23 +225,6 @@ abstract class Common implements Driver
     protected function getPrefixedTag($tag)
     {
         return $this->getOption('prefix_id') . $this->getOption('prefix_tag') . $tag;
-    }
-
-    /**
-     * Returns a value for incrementing or decrementing key.
-     *
-     * @param  string  $id
-     * @return integer
-     */
-    protected function getValueForIncrementOrDecrement($id)
-    {
-        $value = $this->doLoadRaw($this->getPrefixedIdentifier($id));
-
-        if (!$value || !is_integer($value)) {
-            $value = 0;
-        }
-
-        return $value;
     }
 
     /**
