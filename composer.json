@@ -1,6 +1,6 @@
 {
     "name": "endeveit/cache",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "type": "library",
     "description": "Simple caching library with support for tags.",
     "keywords": [
