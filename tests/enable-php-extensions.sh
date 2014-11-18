@@ -11,5 +11,8 @@ else
     ( CFLAGS="-O2 -g3 -fno-strict-aliasing" pecl upgrade apc < /dev/null; phpenv config-add "$DIR/z-apc.ini" ) &
 fi
 
+# Enable igbinary
+pecl install igbinary < /dev/null
+
 # Enable extensions
 phpenv config-add "$DIR/z-travis.ini"

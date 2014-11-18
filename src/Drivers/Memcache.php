@@ -63,16 +63,22 @@ class Memcache extends Common
      */
     public function increment($id, $value = 1)
     {
-        $id = $this->getPrefixedIdentifier($id);
-
         $this->validateIdentifier($id);
 
-        $result = $this->getOption('client')->increment($id, $value);
+        $id  = $this->getPrefixedIdentifier($id);
+        $raw = $this->doLoadRaw($id);
 
-        if (false === $result) {
-            $this->doSaveScalar($value, $id);
-
+        if (false !== $raw) {
+            if ($raw < 0) {
+                $result = $raw + $value;
+                $this->doSaveScalar($result, $id);
+            } else {
+                $result = $this->getOption('client')->increment($id, $value);
+            }
+        } else {
             $result = $value;
+
+            $this->doSaveScalar($value, $id);
         }
 
         return $result;
@@ -87,16 +93,23 @@ class Memcache extends Common
      */
     public function decrement($id, $value = 1)
     {
-        $id = $this->getPrefixedIdentifier($id);
-
         $this->validateIdentifier($id);
 
-        $result = $this->getOption('client')->decrement($id, $value);
+        $id  = $this->getPrefixedIdentifier($id);
+        $raw = $this->doLoadRaw($id);
 
-        if (false === $result) {
-            $this->doSaveScalar($value, $id);
+        if (false !== $raw) {
+            if ($raw < 0) {
+                $result = $raw - $value;
 
+                $this->doSaveScalar($raw - $value, $id);
+            } else {
+                $result = $this->getOption('client')->decrement($id, $value);
+            }
+        } else {
             $result = -$value;
+
+            $this->doSaveScalar($result, $id);
         }
 
         return $result;

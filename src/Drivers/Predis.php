@@ -81,7 +81,7 @@ class Predis extends Common
         $source = $this->getOption('client')->get($id);
 
         if (!empty($source) && is_string($source)) {
-            $result = unserialize($source);
+            $result = $this->getSerializer()->unserialize($source);
         }
 
         return $result;
@@ -125,7 +125,7 @@ class Predis extends Common
     {
         $result = $this->getOption('client')->get($id);
 
-        return !empty($result) ? unserialize($result) : false;
+        return !empty($result) ? $this->getSerializer()->unserialize($result) : false;
     }
 
     /**
@@ -140,7 +140,7 @@ class Predis extends Common
     {
         $pipe = $this->getOption('client')->pipeline();
 
-        $pipe->set($id, serialize($data));
+        $pipe->set($id, $this->getSerializer()->serialize($data));
 
         // Store the tags
         if (!empty($tags)) {
@@ -167,7 +167,7 @@ class Predis extends Common
         $result = false;
 
         try {
-            $result = $this->getOption('client')->set($id, serialize($data));
+            $result = $this->getOption('client')->set($id, $this->getSerializer()->serialize($data));
 
             if (false !== $lifetime) {
                 $result = $this->getOption('client')->expire($id, $lifetime);

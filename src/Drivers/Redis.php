@@ -119,7 +119,6 @@ class Redis extends Common
     /**
      * Adds new connection to connections pool.
      *
-     * @codeCoverageIgnore
      * @param  string                    $host
      * @param  integer                   $port
      * @param  float                     $timeout
@@ -153,7 +152,7 @@ class Redis extends Common
         $source = $this->getConnection($id)->get($id);
 
         if (!empty($source) && is_string($source)) {
-            $result = unserialize($source);
+            $result = $this->getSerializer()->unserialize($source);
         }
 
         return $result;
@@ -216,7 +215,7 @@ class Redis extends Common
      */
     protected function doSave($data, $id, array $tags = array())
     {
-        $result = $this->getConnection($id)->set($id, serialize($data));
+        $result = $this->getConnection($id)->set($id, $this->getSerializer()->serialize($data));
 
         if (!empty($tags)) {
             foreach (array_unique($tags) as $tag) {
@@ -289,7 +288,6 @@ class Redis extends Common
     /**
      * Returns connection by key name.
      *
-     * @codeCoverageIgnore
      * @param  string                    $id
      * @return \Redis
      * @throws \RuntimeException
@@ -378,7 +376,6 @@ class Redis extends Common
     /**
      * Returns \Redis object by key value.
      *
-     * @codeCoverageIgnore
      * @param  integer $key
      * @return \Redis
      */
@@ -398,8 +395,6 @@ class Redis extends Common
 
     /**
      * Initialization of hashring.
-     *
-     * @codeCoverageIgnore
      */
     private function initializeHashring()
     {
@@ -445,8 +440,6 @@ class Redis extends Common
 
     /**
      * Cleans up the local cache.
-     *
-     * @codeCoverageIgnore
      */
     private function cleanBackendsCache()
     {

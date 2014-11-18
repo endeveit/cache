@@ -22,10 +22,10 @@ abstract class Common implements Driver
      * @var array
      */
     protected $defaultOptions = array(
-        'lock_suffix'  => '.lock',
-        'lock_timeout' => 10,
-        'prefix_id'    => '',
-        'prefix_tag'   => 'tag.'
+        'lock_suffix' => '.lock',
+        'prefix_id'   => '',
+        'prefix_tag'  => 'tag.',
+        'serializer'  => 'BuiltIn',
     );
 
     /**
@@ -36,12 +36,21 @@ abstract class Common implements Driver
     protected $options = array();
 
     /**
+     * Instance of serializer.
+     *
+     * @var \Endeveit\Cache\Interfaces\Serializer
+     */
+    protected $serializer = null;
+
+    /**
      * Class constructor.
      * Available options:
      *  "lock_suffix" => suffix for read lock key
      *  "prefix_id"   => prefix for cache keys
      *  "prefix_tag"  => prefix for cache tags
+     *  "serializer"  => serializer object
      *
+     * @codeCoverageIgnore
      * @param array $options
      */
     public function __construct(array $options = array())
@@ -195,6 +204,21 @@ abstract class Common implements Driver
     }
 
     /**
+     * Returns serializer object.
+     *
+     * @return \Endeveit\Cache\Interfaces\Serializer
+     */
+    protected function getSerializer()
+    {
+        if (null === $this->serializer) {
+            $className        = 'Endeveit\Cache\Serializers\\' . $this->getOption('serializer');
+            $this->serializer = new $className();
+        }
+
+        return $this->serializer;
+    }
+
+    /**
      * Returns prefixed identifier.
      *
      * @param  string $id
@@ -239,7 +263,7 @@ abstract class Common implements Driver
 
         if ((false !== $serialized)
             && is_string($serialized)
-            && ($unserialized = unserialize($serialized))
+            && ($unserialized = $this->getSerializer()->unserialize($serialized))
             && is_array($unserialized)
             && array_key_exists('data', $unserialized)) {
             $result = $unserialized['data'];

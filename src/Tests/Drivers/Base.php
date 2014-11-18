@@ -1,8 +1,15 @@
 <?php
-namespace Endeveit\Cache\Tests;
+/**
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @author Nikita Vershinin <endeveit@gmail.com>
+ * @license MIT
+ */
+namespace Endeveit\Cache\Tests\Drivers;
 
 /**
- * Main class with tests.
+ * Base class for drivers tests.
  */
 abstract class Base extends \PHPUnit_Framework_TestCase
 {
@@ -161,9 +168,12 @@ abstract class Base extends \PHPUnit_Framework_TestCase
             $cacheData = $method2->invoke(self::$driver)->unserialize($cacheData);
         }
 
+        // Assume delay can be in range 0 < $delay < 5
+        $range = $cacheData['expiresAt'] - $touchTime - $now;
         $this->assertInternalType('array', $cacheData);
         $this->assertArrayHasKey('expiresAt', $cacheData);
-        $this->assertEquals($cacheData['expiresAt'] - $touchTime, $now);
+        $this->assertGreaterThanOrEqual(0, $range);
+        $this->assertLessThanOrEqual(5, $range);
     }
 
     /**
@@ -218,6 +228,16 @@ abstract class Base extends \PHPUnit_Framework_TestCase
         if (null === self::$driver) {
             self::markTestIncomplete('Cache driver is empty');
         } else {
+            // Run tests with igbinary serialization if it available
+            if (extension_loaded('igbinary')) {
+                $obj      = new \ReflectionObject(self::$driver);
+                $property = $obj->getProperty('options');
+                $property->setAccessible(true);
+
+                $options = $property->getValue(self::$driver);
+                $property->setValue(self::$driver, array_merge($options, array('serializer' => 'Igbinary')));
+            }
+
             self::generateIdentifiers();
         }
     }
@@ -296,7 +316,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Abstract method that returns driver for testing.
+     * Method that returns driver for testing.
      *
      * @return \Endeveit\Cache\Interfaces\Driver
      */

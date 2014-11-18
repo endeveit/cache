@@ -78,3 +78,10 @@ Notes on caching backend drivers
 For some caching backend drivers there are some limitation described in this chapter.
 
 When using Memcache backend identifiers should match ^[\S]+$ regexp pattern.
+
+
+Serializers
+===========
+
+You can change serialization method with constructor option "serializer".
+Currently available serializers are "BuiltIn" and "Igbinary".

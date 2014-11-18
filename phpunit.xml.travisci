@@ -13,15 +13,17 @@
         verbose="true"
         >
     <testsuites>
-        <testsuite name="Application Test Suite">
-            <directory>./src/Tests/</directory>
+        <testsuite name="Drivers">
+            <directory>./src/Tests/Drivers</directory>
+        </testsuite>
+        <testsuite name="Serializers">
+            <directory>./src/Tests/Serializers</directory>
         </testsuite>
     </testsuites>
     <filter>
         <whitelist>
-          <directory suffix=".php">./</directory>
+          <directory suffix=".php">./src</directory>
           <exclude>
-            <directory suffix=".php">./vendor</directory>
             <directory suffix=".php">./src/Tests</directory>
           </exclude>
         </whitelist>

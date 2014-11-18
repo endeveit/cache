@@ -14,7 +14,7 @@ Requirements
 Storages
 --------
 * [APC](http://php.net/apc)
-* [Memcached](http://memcached.org/) (uses [Memcache PHP Driver](http://php.net/book.memcache.php))
+* [Memcached](http://memcached.org/) (uses [Memcache](http://php.net/manual/en/book.memcache.php) or [Memcached](http://php.net/manual/en/book.memcached.php))
 * [Redis](http://redis.io) (uses [Redis](https://github.com/nicolasff/phpredis/) extension or [Predis](https://github.com/nrk/predis) library)
 * [XCache](http://xcache.lighttpd.net/)
 
