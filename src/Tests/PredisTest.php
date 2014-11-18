@@ -15,7 +15,7 @@ class PredisTest extends Base
      *
      * @return \Endeveit\Cache\Interfaces\Driver
      */
-    protected function getDriver()
+    protected static function getDriver()
     {
         $client = new Client(array(
             'host' => '127.0.0.1'

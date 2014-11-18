@@ -16,7 +16,7 @@ class MemcacheTest extends Base
     {
         $this->setExpectedException('Endeveit\Cache\Exception');
 
-        $this->driver->save(true, 'id with spaces');
+        self::$driver->save(true, 'id with spaces');
     }
 
     /**
@@ -24,10 +24,11 @@ class MemcacheTest extends Base
      *
      * @return \Endeveit\Cache\Interfaces\Driver
      */
-    protected function getDriver()
+    protected static function getDriver()
     {
         $memcache = new \Memcache();
         $memcache->addServer('127.0.0.1');
+        $memcache->flush();
 
         return new Driver(array('client' => $memcache, 'prefix_id' => 'PHPUnit_'));
     }

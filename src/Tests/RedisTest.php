@@ -14,7 +14,7 @@ class RedisTest extends Base
      *
      * @return \Endeveit\Cache\Interfaces\Driver
      */
-    protected function getDriver()
+    protected static function getDriver()
     {
         return new Driver(array(
             'servers'          => array(

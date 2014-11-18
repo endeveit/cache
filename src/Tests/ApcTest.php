@@ -14,7 +14,7 @@ class ApcTest extends MemcacheTest
      *
      * @return \Endeveit\Cache\Interfaces\Driver
      */
-    protected function getDriver()
+    protected static function getDriver()
     {
         return extension_loaded('apc') ? new Driver(array('prefix_id' => 'PHPUnit_')) : null;
     }

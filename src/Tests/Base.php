@@ -12,38 +12,38 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      *
      * @var \Endeveit\Cache\Interfaces\Driver
      */
-    protected $driver = null;
+    protected static $driver = null;
 
     /**
      * Entries lifetime.
      *
      * @var integer
      */
-    protected $lifetime = 2;
+    protected static $lifetime = 2;
 
     /**
      * Array with random generated identifiers.
      *
      * @var array
      */
-    protected $cacheIdentifiers = array();
+    protected static $cacheIdentifiers = array();
 
     /**
      * Array with cache tags for generated identifiers.
      *
      * @var array
      */
-    protected $cacheIdentifiersTags = array();
+    protected static $cacheIdentifiersTags = array();
 
     /**
      * @see \Endeveit\Cache\Interfaces\Driver::load()
      */
     public function testLoad()
     {
-        $identifier = $this->getRandomIdentifier();
+        $identifier = self::getRandomIdentifier();
 
-        $this->assertTrue($this->saveInCache($identifier));
-        $this->assertEquals($this->getDataForIdentifier($identifier), $this->driver->load($identifier));
+        $this->assertTrue(self::saveInCache($identifier));
+        $this->assertEquals(self::getDataForIdentifier($identifier), self::$driver->load($identifier));
     }
 
     /**
@@ -51,13 +51,13 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testExpiredNoLock()
     {
-        $identifier = $this->getRandomIdentifier();
+        $identifier = self::getRandomIdentifier();
 
-        $this->assertTrue($this->saveInCache($identifier));
+        $this->assertTrue(self::saveInCache($identifier));
 
-        sleep($this->lifetime + 1);
+        sleep(self::$lifetime + 1);
 
-        $this->assertEquals($this->getDataForIdentifier($identifier), $this->driver->load($identifier));
+        $this->assertEquals(self::getDataForIdentifier($identifier), self::$driver->load($identifier));
     }
 
     /**
@@ -65,13 +65,13 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testExpiredWithLock()
     {
-        $identifier = $this->getRandomIdentifier();
+        $identifier = self::getRandomIdentifier();
 
-        $this->assertTrue($this->saveInCache($identifier));
+        $this->assertTrue(self::saveInCache($identifier));
 
-        sleep($this->lifetime + 1);
+        sleep(self::$lifetime + 1);
 
-        $this->assertFalse($this->driver->load($identifier, 10));
+        $this->assertFalse(self::$driver->load($identifier, 10));
     }
 
     /**
@@ -79,13 +79,13 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testLoadMany()
     {
-        $identifiers = $this->getRandomIdentifiers();
+        $identifiers = self::getRandomIdentifiers();
 
         foreach ($identifiers as $identifier) {
-            $this->saveInCache($identifier);
+            self::saveInCache($identifier);
         }
 
-        $this->assertFalse(array_search(false, $this->driver->loadMany($identifiers)));
+        $this->assertFalse(array_search(false, self::$driver->loadMany($identifiers)));
     }
 
     /**
@@ -93,10 +93,10 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testLoadManyWithEmpty()
     {
-        $identifiers = $this->getRandomIdentifiers();
+        $identifiers = self::getRandomIdentifiers();
 
         foreach ($identifiers as $identifier) {
-            $this->saveInCache($identifier);
+            self::saveInCache($identifier);
         }
 
         $nbFalseKeys = 0;
@@ -106,7 +106,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
             ++$nbFalseKeys;
         }
 
-        $falseKeys = array_keys($this->driver->loadMany($identifiers), false);
+        $falseKeys = array_keys(self::$driver->loadMany($identifiers), false);
 
         $this->assertNotEmpty($falseKeys);
         $this->assertEquals($nbFalseKeys, count($falseKeys));
@@ -117,10 +117,10 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testRemove()
     {
-        $identifier = $this->getRandomIdentifier();
+        $identifier = self::getRandomIdentifier();
 
-        $this->assertTrue($this->saveInCache($identifier));
-        $this->assertTrue($this->driver->remove($identifier));
+        $this->assertTrue(self::saveInCache($identifier));
+        $this->assertTrue(self::$driver->remove($identifier));
     }
 
     /**
@@ -128,11 +128,11 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveByTags()
     {
-        $identifier = $this->getRandomIdentifier();
+        $identifier = self::getRandomIdentifier();
 
-        $this->assertTrue($this->saveInCache($identifier));
-        $this->assertTrue($this->driver->removeByTags(array($this->cacheIdentifiersTags[$identifier])));
-        $this->assertFalse($this->driver->load($identifier));
+        $this->assertTrue(self::saveInCache($identifier));
+        $this->assertTrue(self::$driver->removeByTags(array(self::$cacheIdentifiersTags[$identifier])));
+        $this->assertFalse(self::$driver->load($identifier));
     }
 
     /**
@@ -142,21 +142,23 @@ abstract class Base extends \PHPUnit_Framework_TestCase
     {
         $now        = time();
         $touchTime  = 300;
-        $identifier = $this->getRandomIdentifier();
+        $identifier = self::getRandomIdentifier();
 
-        $this->assertTrue($this->saveInCache($identifier));
-        $this->assertTrue($this->driver->touch($identifier, $touchTime));
+        $this->assertTrue(self::saveInCache($identifier));
+        $this->assertTrue(self::$driver->touch($identifier, $touchTime));
 
-        $obj     = new \ReflectionObject($this->driver);
+        $obj     = new \ReflectionObject(self::$driver);
         $method0 = $obj->getMethod('doLoadRaw');
         $method1 = $obj->getMethod('getPrefixedIdentifier');
+        $method2 = $obj->getMethod('getSerializer');
         $method0->setAccessible(true);
         $method1->setAccessible(true);
+        $method2->setAccessible(true);
 
-        $cacheData = $method0->invoke($this->driver, $method1->invoke($this->driver, $identifier));
+        $cacheData = $method0->invoke(self::$driver, $method1->invoke(self::$driver, $identifier));
 
         if (is_string($cacheData)) {
-            $cacheData = unserialize($cacheData);
+            $cacheData = $method2->invoke(self::$driver)->unserialize($cacheData);
         }
 
         $this->assertInternalType('array', $cacheData);
@@ -169,18 +171,10 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testIncrement()
     {
-        $identifier = $this->getRandomIdentifier();
+        $identifier = 'not_existed_inc';
 
-        $this->assertEquals(1, $this->driver->increment($identifier));
-        $this->assertEquals(3, $this->driver->increment($identifier, 2));
-    }
-
-    /**
-     * @see \Endeveit\Cache\Interfaces\Driver::increment()
-     */
-    public function testIncrementNotExisted()
-    {
-        $this->assertEquals(10, $this->driver->increment('not_existed_inc', 10));
+        $this->assertEquals(1, self::$driver->increment($identifier));
+        $this->assertEquals(3, self::$driver->increment($identifier, 2));
     }
 
     /**
@@ -188,18 +182,11 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testDecrement()
     {
-        $identifier = $this->getRandomIdentifier();
+        $identifier = 'not_existed_dec';
 
-        $this->assertEquals(5, $this->driver->increment($identifier, 5));
-        $this->assertEquals(2, $this->driver->decrement($identifier, 3));
-    }
-
-    /**
-     * @see \Endeveit\Cache\Interfaces\Driver::decrement()
-     */
-    public function testDecrementNotExisted()
-    {
-        $this->assertEquals(-10, $this->driver->decrement('not_existed_dec', 10));
+        $this->assertEquals(-10, self::$driver->decrement($identifier, 10));
+        $this->assertEquals(5, self::$driver->increment($identifier, 15));
+        $this->assertEquals(2, self::$driver->decrement($identifier, 3));
     }
 
     /**
@@ -207,10 +194,10 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testContains()
     {
-        $identifier = $this->getRandomIdentifier();
+        $identifier = self::getRandomIdentifier();
 
-        $this->assertTrue($this->saveInCache($identifier));
-        $this->assertTrue($this->driver->contains($identifier));
+        $this->assertTrue(self::saveInCache($identifier));
+        $this->assertTrue(self::$driver->contains($identifier));
     }
 
     /**
@@ -218,28 +205,30 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      */
     public function testFlush()
     {
-        $this->assertTrue($this->driver->flush());
+        $this->assertTrue(self::$driver->flush());
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    public static function setUpBeforeClass()
     {
-        $this->driver = $this->getDriver();
+        self::$driver = static::getDriver();
 
-        if (null === $this->driver) {
-            $this->markTestSkipped('Cache driver is empty');
+        if (null === self::$driver) {
+            self::markTestIncomplete('Cache driver is empty');
         } else {
-            $this->generateIdentifiers();
+            self::generateIdentifiers();
         }
     }
 
     /**
+     * Returns data for provided identifier.
+     *
      * @param  string $identifier
      * @return string
      */
-    protected function getDataForIdentifier($identifier)
+    protected static function getDataForIdentifier($identifier)
     {
         return 'data_' . $identifier;
     }
@@ -249,9 +238,9 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      *
      * @return string
      */
-    protected function getRandomIdentifier()
+    protected static function getRandomIdentifier()
     {
-        return $this->cacheIdentifiers[array_rand($this->cacheIdentifiers)];
+        return self::$cacheIdentifiers[array_rand(self::$cacheIdentifiers)];
     }
 
     /**
@@ -259,13 +248,13 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      *
      * @return array
      */
-    protected function getRandomIdentifiers()
+    protected static function getRandomIdentifiers()
     {
         $identifiers   = array();
-        $nbIdentifiers = rand(1, floor(count($this->cacheIdentifiers) / 2));
+        $nbIdentifiers = rand(1, floor(count(self::$cacheIdentifiers) / 2));
 
         while ($nbIdentifiers > 0) {
-            $identifier = $this->getRandomIdentifier();
+            $identifier = self::getRandomIdentifier();
 
             if (!in_array($identifier, $identifiers)) {
                 $identifiers[] = $identifier;
@@ -282,27 +271,27 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      * @param  string  $identifier
      * @return boolean
      */
-    protected function saveInCache($identifier)
+    protected static function saveInCache($identifier)
     {
-        return $this->driver->save(
-            $this->getDataForIdentifier($identifier),
+        return self::$driver->save(
+            self::getDataForIdentifier($identifier),
             $identifier,
-            array($this->cacheIdentifiersTags[$identifier]),
-            $this->lifetime
+            array(self::$cacheIdentifiersTags[$identifier]),
+            self::$lifetime
         );
     }
 
     /**
      * Generates list of random cache identifiers.
      */
-    protected function generateIdentifiers()
+    protected static function generateIdentifiers()
     {
         for ($i = 0; $i < rand(10, 20); $i++) {
             $id              = sprintf('%04d', rand(1, 9999));
             $cacheIdentifier = 'cache_' . $id;
 
-            $this->cacheIdentifiers[]                     = $cacheIdentifier;
-            $this->cacheIdentifiersTags[$cacheIdentifier] = 'tag_' . $id;
+            self::$cacheIdentifiers[]                     = $cacheIdentifier;
+            self::$cacheIdentifiersTags[$cacheIdentifier] = 'tag_' . $id;
         }
     }
 
@@ -311,5 +300,8 @@ abstract class Base extends \PHPUnit_Framework_TestCase
      *
      * @return \Endeveit\Cache\Interfaces\Driver
      */
-    abstract protected function getDriver();
+    protected static function getDriver()
+    {
+        return null;
+    }
 }

@@ -14,7 +14,7 @@ class XCacheTest extends MemcacheTest
      *
      * @return \Endeveit\Cache\Interfaces\Driver
      */
-    protected function getDriver()
+    protected static function getDriver()
     {
         return extension_loaded('xcache') ? new Driver(array('prefix_id' => 'PHPUnit_')) : null;
     }

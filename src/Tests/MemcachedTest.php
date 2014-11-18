@@ -14,10 +14,11 @@ class MemcachedTest extends MemcacheTest
      *
      * @return \Endeveit\Cache\Interfaces\Driver
      */
-    protected function getDriver()
+    protected static function getDriver()
     {
         $memcached = new \Memcached();
         $memcached->addServer('127.0.0.1', 11211);
+        $memcached->flush();
 
         return new Driver(array('client' => $memcached, 'prefix_id' => 'PHPUnit_'));
     }
