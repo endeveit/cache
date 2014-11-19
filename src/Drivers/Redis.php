@@ -133,7 +133,7 @@ class Redis extends Common
         }
 
         $this->backendsWeights[$key] = $weight;
-        $this->connectionOptions[$key] = array($host, $port, $timeout);
+        $this->connectionsOptions[$key] = array($host, $port, $timeout);
 
         $this->nbBackends++;
 
@@ -170,7 +170,7 @@ class Redis extends Common
         $nbIdentifiers = count($identifiers);
         $nbFound       = 0;
 
-        foreach (array_keys($this->connectionOptions) as $key) {
+        foreach (array_keys($this->connectionsOptions) as $key) {
             foreach ($this->getRedisObject($key)->mGet($identifiers) as $i => $row) {
                 $id   = $this->getIdentifierWithoutPrefix($identifiers[$i]);
                 $data = $this->getDataFromSerialized($row);
@@ -278,7 +278,7 @@ class Redis extends Common
      */
     protected function doFlush()
     {
-        foreach (array_keys($this->connectionOptions) as $key) {
+        foreach (array_keys($this->connectionsOptions) as $key) {
             $this->getRedisObject($key)->flushDB();
         }
 
@@ -366,7 +366,7 @@ class Redis extends Common
             }
         }
 
-        if (null === $return || !array_key_exists($return, $this->connectionOptions)) {
+        if (null === $return || !array_key_exists($return, $this->connectionsOptions)) {
             throw new \RuntimeException('Unable to determine connection or it\'s options.');
         }
 
@@ -384,9 +384,9 @@ class Redis extends Common
         if (!array_key_exists($key, $this->connections)) {
             $this->connections[$key] = new \Redis();
             $this->connections[$key]->connect(
-                $this->connectionOptions[$key][0],
-                $this->connectionOptions[$key][1],
-                $this->connectionOptions[$key][2]
+                $this->connectionsOptions[$key][0],
+                $this->connectionsOptions[$key][1],
+                $this->connectionsOptions[$key][2]
             );
         }
 
