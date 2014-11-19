@@ -25,7 +25,8 @@ class RedisTest extends Base
     {
         return new Driver(array(
             'servers'          => array(
-                array('host' => '127.0.0.1'),
+                array('host' => '127.0.0.1', 63791),
+                array('host' => '127.0.0.1', 63792),
             ),
             'local_cache_size' => 64,
             'prefix_id'        => 'PHPUnit_',

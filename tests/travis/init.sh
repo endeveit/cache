@@ -19,3 +19,6 @@ fi
 
 # Enable extensions
 phpenv config-add "$DIR/z-travis.ini"
+
+sh -c "/usr/bin/redis-server $DIR/redis-node-1.conf --dir ${DIR}/redis --include ${DIR}/redis-common.conf"
+sh -c "/usr/bin/redis-server $DIR/redis-node-2.conf --dir ${DIR}/redis --include ${DIR}/redis-common.conf"

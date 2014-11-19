@@ -25,7 +25,8 @@ class PredisTest extends Base
     protected static function getDriver()
     {
         $client = new Client(array(
-            'host' => '127.0.0.1'
+            array('host' => '127.0.0.1', 'port' => 63791),
+            array('host' => '127.0.0.1', 'port' => 63792),
         ));
 
         return new Driver(array('client' => $client, 'prefix_id' => 'PHPUnit_'));
