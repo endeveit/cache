@@ -1,4 +1,5 @@
 /build/
+/tests/travis/redis/*
 /vendor/
 .idea
 composer.lock
