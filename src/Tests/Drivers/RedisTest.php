@@ -31,7 +31,6 @@ class RedisTest extends Base
         parent::setUpBeforeClass();
 
         self::$driverReflection = new \ReflectionObject(self::$driver);
-
     }
 
     /**

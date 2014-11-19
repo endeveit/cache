@@ -11,6 +11,8 @@ namespace Endeveit\Cache\Drivers;
 use Endeveit\Cache\Abstracts\Common;
 use Endeveit\Cache\Exception;
 use Predis\Client;
+use Predis\Connection\Aggregate\PredisCluster;
+use Predis\Response\Status;
 
 /**
  * Driver that stores data in Redis and uses Predis library
@@ -18,13 +20,6 @@ use Predis\Client;
  */
 class Predis extends Common
 {
-
-    /**
-     * Predis object.
-     *
-     * @var \Predis\Client
-     */
-    protected $client = null;
 
     /**
      * {@inheritdoc}
@@ -167,10 +162,10 @@ class Predis extends Common
         $result = false;
 
         try {
-            $result = $this->getOption('client')->set($id, $this->getSerializer()->serialize($data));
+            $result = $this->isStatusOk($this->getOption('client')->set($id, $this->getSerializer()->serialize($data)));
 
             if (false !== $lifetime) {
-                $result = $this->getOption('client')->expire($id, $lifetime);
+                $result = $this->isStatusOk($this->getOption('client')->expire($id, $lifetime));
             }
         } catch (\Exception $e) {
         }
@@ -219,8 +214,34 @@ class Predis extends Common
      */
     protected function doFlush()
     {
-        $this->getOption('client')->flushdb();
+        $result = true;
 
-        return true;
+        if ($this->getOption('client')->getConnection() instanceof PredisCluster) {
+            /** @var \ArrayIterator $iterator */
+            $iterator = $this->getOption('client')->getConnection()->getIterator();
+
+            while ($iterator->valid()) {
+                if (!$this->isStatusOk($this->getOption('client')->getClientFor($iterator->key())->flushdb())) {
+                    $result = false;
+                }
+
+                $iterator->next();
+            }
+        } else {
+            $result = $this->isStatusOk($this->getOption('client')->flushdb());
+        }
+
+        return $result;
+    }
+
+    /**
+     * Checks that response status is «OK».
+     *
+     * @param  \Predis\Response\Status $status
+     * @return boolean
+     */
+    private function isStatusOk(Status $status)
+    {
+        return 0 === strcasecmp($status->getPayload(), 'ok');
     }
 }
