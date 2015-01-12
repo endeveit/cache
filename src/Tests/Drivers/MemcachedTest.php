@@ -23,6 +23,10 @@ class MemcachedTest extends MemcacheTest
      */
     protected static function getDriver()
     {
+        if (!class_exists('Memcached')) {
+            return null;
+        }
+
         $memcached = new \Memcached();
         $memcached->addServer('127.0.0.1', 11211);
         $memcached->flush();

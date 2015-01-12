@@ -33,6 +33,10 @@ class MemcacheTest extends Base
      */
     protected static function getDriver()
     {
+        if (!class_exists('Memcache')) {
+            return null;
+        }
+
         $memcache = new \Memcache();
         $memcache->addServer('127.0.0.1');
         $memcache->flush();

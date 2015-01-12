@@ -99,6 +99,10 @@ class RedisTest extends Base
      */
     protected static function getDriver()
     {
+        if (!class_exists('Redis')) {
+            return null;
+        }
+
         return new Driver(array(
             'servers'          => array(
                 array('host' => '127.0.0.1', 'port' => 63791),
