@@ -76,6 +76,8 @@ abstract class Common implements Driver
 
             if (array_key_exists('expiresAt', $source)) {
                 if ($source['expiresAt'] < $now) {
+                    $result = false;
+
                     if (null !== $lockTimeout) {
                         $lockId = $this->getPrefixedIdentifier($id . $this->getOption('lock_suffix'));
 
@@ -83,7 +85,7 @@ abstract class Common implements Driver
                             // Set the lock and return false
                             $this->doSaveScalar(1, $lockId, intval($lockTimeout));
 
-                            $result = false;
+                            $result = $source['data'];
                         }
                     }
                 }
