@@ -80,8 +80,9 @@ abstract class Common implements Driver
 
                     if (null !== $lockTimeout) {
                         $lockId = $this->getPrefixedIdentifier($id . $this->getOption('lock_suffix'));
+                        $exists = $this->doLoadRaw($lockId);
 
-                        if (!$this->contains($lockId)) {
+                        if (!$exists) {
                             // Set the lock and return false
                             $this->doSaveScalar(1, $lockId, intval($lockTimeout));
 
