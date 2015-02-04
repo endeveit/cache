@@ -78,6 +78,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
 
         sleep(self::$lifetime + 1);
 
+        $this->assertFalse(self::$driver->load($identifier, 10));
         $this->assertEquals(self::getDataForIdentifier($identifier), self::$driver->load($identifier, 10));
     }
 

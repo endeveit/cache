@@ -86,6 +86,8 @@ abstract class Common implements Driver
                             // Set the lock and return false
                             $this->doSaveScalar(1, $lockId, intval($lockTimeout));
 
+                            $result = false;
+                        } else {
                             $result = $source['data'];
                         }
                     }
