@@ -62,10 +62,17 @@ class Memcached extends Memcache
     protected function doLoadMany(array $identifiers)
     {
         $result = array();
+        $now    = time();
 
-        foreach ($this->getOption('client')->getMulti($identifiers) as $id => $entry) {
-            if (!empty($entry) && is_array($entry)) {
-                $result[$this->getIdentifierWithoutPrefix($id)] = $entry['data'];
+        foreach ($this->getOption('client')->getMulti($identifiers) as $id => $source) {
+            if (!empty($source) && is_array($source) && array_key_exists('data', $source)) {
+                $i = $this->getIdentifierWithoutPrefix($id);
+
+                if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
+                    $result[$i] = false;
+                } else {
+                    $result[$i] = $source['data'];
+                }
             }
         }
 

@@ -85,12 +85,19 @@ class XCache extends Memcache
     protected function doLoadMany(array $identifiers)
     {
         $result = array();
+        $now    = time();
 
         foreach ($identifiers as $id) {
-            $data = xcache_get($id);
+            $source = xcache_get($id);
 
-            if (!empty($data) && is_array($data)) {
-                $result[$this->getIdentifierWithoutPrefix($id)] = $data['data'];
+            if (!empty($source) && is_array($source) && array_key_exists('data', $source)) {
+                $i = $this->getIdentifierWithoutPrefix($id);
+
+                if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
+                    $result[$i] = false;
+                } else {
+                    $result[$i] = $source['data'];
+                }
             }
         }
 

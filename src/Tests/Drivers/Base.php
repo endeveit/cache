@@ -109,7 +109,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
 
         sleep(self::$lifetime + 1);
 
-        $this->assertNotEmpty(array_search(false, self::$driver->loadMany($identifiers)));
+        $this->assertNotFalse(array_search(false, self::$driver->loadMany($identifiers), true));
     }
 
     /**
