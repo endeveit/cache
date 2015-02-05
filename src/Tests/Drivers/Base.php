@@ -99,6 +99,22 @@ abstract class Base extends \PHPUnit_Framework_TestCase
     /**
      * @see \Endeveit\Cache\Interfaces\Driver::loadMany()
      */
+    public function testLoadManyExpired()
+    {
+        $identifiers = self::getRandomIdentifiers();
+
+        foreach ($identifiers as $identifier) {
+            self::saveInCache($identifier);
+        }
+
+        sleep(self::$lifetime + 1);
+
+        $this->assertNotEmpty(array_search(false, self::$driver->loadMany($identifiers)));
+    }
+
+    /**
+     * @see \Endeveit\Cache\Interfaces\Driver::loadMany()
+     */
     public function testLoadManyWithEmpty()
     {
         $identifiers = self::getRandomIdentifiers();

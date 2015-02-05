@@ -169,16 +169,23 @@ class Redis extends Common
         $result        = array();
         $nbIdentifiers = count($identifiers);
         $nbFound       = 0;
+        $now           = time();
 
         foreach (array_keys($this->connectionsOptions) as $key) {
             foreach ($this->getRedisObject($key)->mGet($identifiers) as $i => $row) {
-                $id   = $this->getIdentifierWithoutPrefix($identifiers[$i]);
-                $data = $this->getDataFromSerialized($row);
+                $id     = $this->getIdentifierWithoutPrefix($identifiers[$i]);
+                $source = $this->getSerializer()->unserialize($row);
 
-                if (null !== $data) {
-                    $result[$id] = $data;
+                if (!empty($source) && is_array($source) && array_key_exists('data', $source)) {
+                    if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
+                        $result[$id] = false;
+                    } else {
+                        $result[$id] = $source['data'];
 
-                    ++$nbFound;
+                        ++$nbFound;
+                    }
+                } else {
+                    $result[$id] = false;
                 }
             }
 

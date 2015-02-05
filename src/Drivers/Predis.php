@@ -92,16 +92,24 @@ class Predis extends Common
     {
         $result = array();
         $pipe   = $this->getOption('client')->pipeline();
+        $now    = time();
 
         foreach ($identifiers as $id) {
             $pipe->get($id);
         }
 
         foreach ($pipe->execute() as $key => $row) {
-            $data = $this->getDataFromSerialized($row);
+            $source = $this->getSerializer()->unserialize($row);
+            $id     = $this->getIdentifierWithoutPrefix($identifiers[$key]);
 
-            if (null !== $data) {
-                $result[$this->getIdentifierWithoutPrefix($identifiers[$key])] = $data;
+            if (!empty($source) && is_array($source) && array_key_exists('data', $source)) {
+                if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
+                    $result[$id] = false;
+                } else {
+                    $result[$id] = $source['data'];
+                }
+            } else {
+                $result[$id] = false;
             }
         }
 

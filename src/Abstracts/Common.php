@@ -71,25 +71,22 @@ abstract class Common implements Driver
         $source = $this->doLoad($this->getPrefixedIdentifier($id));
 
         if (false !== $source) {
-            $now    = time();
             $result = $source['data'];
 
-            if (array_key_exists('expiresAt', $source)) {
-                if ($source['expiresAt'] < $now) {
-                    $result = false;
+            if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < time())) {
+                $result = false;
 
-                    if (null !== $lockTimeout) {
-                        $lockId = $this->getPrefixedIdentifier($id . $this->getOption('lock_suffix'));
-                        $exists = $this->doLoadRaw($lockId);
+                if (null !== $lockTimeout) {
+                    $lockId = $this->getPrefixedIdentifier($id . $this->getOption('lock_suffix'));
+                    $exists = $this->doLoadRaw($lockId);
 
-                        if (!$exists) {
-                            // Set the lock and return false
-                            $this->doSaveScalar(1, $lockId, intval($lockTimeout));
+                    if (!$exists) {
+                        // Set the lock and return false
+                        $this->doSaveScalar(1, $lockId, intval($lockTimeout));
 
-                            $result = false;
-                        } else {
-                            $result = $source['data'];
-                        }
+                        $result = false;
+                    } else {
+                        $result = $source['data'];
                     }
                 }
             }
@@ -254,27 +251,6 @@ abstract class Common implements Driver
     protected function getPrefixedTag($tag)
     {
         return $this->getOption('prefix_id') . $this->getOption('prefix_tag') . $tag;
-    }
-
-    /**
-     * Returns content of key «data» in serialized entry.
-     *
-     * @param  string $serialized
-     * @return mixed
-     */
-    protected function getDataFromSerialized($serialized)
-    {
-        $result = null;
-
-        if ((false !== $serialized)
-            && is_string($serialized)
-            && ($unserialized = $this->getSerializer()->unserialize($serialized))
-            && is_array($unserialized)
-            && array_key_exists('data', $unserialized)) {
-            $result = $unserialized['data'];
-        }
-
-        return $result;
     }
 
     /**
