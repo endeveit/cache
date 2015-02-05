@@ -166,13 +166,15 @@ class Redis extends Common
      */
     protected function doLoadMany(array $identifiers)
     {
-        $result        = array();
-        $nbIdentifiers = count($identifiers);
-        $nbFound       = 0;
-        $now           = time();
+        $result = array();
+        $now    = time();
 
         foreach (array_keys($this->connectionsOptions) as $key) {
             foreach ($this->getRedisObject($key)->mGet($identifiers) as $i => $row) {
+                if (empty($row)) {
+                    continue;
+                }
+
                 $id     = $this->getIdentifierWithoutPrefix($identifiers[$i]);
                 $source = $this->getSerializer()->unserialize($row);
 
@@ -181,16 +183,10 @@ class Redis extends Common
                         $result[$id] = false;
                     } else {
                         $result[$id] = $source['data'];
-
-                        ++$nbFound;
                     }
                 } else {
                     $result[$id] = false;
                 }
-            }
-
-            if ($nbFound == $nbIdentifiers) {
-                break;
             }
         }
 

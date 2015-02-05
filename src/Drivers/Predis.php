@@ -99,6 +99,10 @@ class Predis extends Common
         }
 
         foreach ($pipe->execute() as $key => $row) {
+            if (empty($row)) {
+                continue;
+            }
+
             $source = $this->getSerializer()->unserialize($row);
             $id     = $this->getIdentifierWithoutPrefix($identifiers[$key]);
 
