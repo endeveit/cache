@@ -9,13 +9,13 @@
 namespace Endeveit\Cache\Abstracts;
 
 use Endeveit\Cache\Interfaces\Driver;
+use Endeveit\Cache\Interfaces\Serializer;
 
 /**
  * Base class for drivers that use max lifetime limit.
  */
 abstract class Common implements Driver
 {
-
     /**
      * Default options for all drivers.
      *
@@ -48,7 +48,7 @@ abstract class Common implements Driver
      *  "lock_suffix" => suffix for read lock key
      *  "prefix_id"   => prefix for cache keys
      *  "prefix_tag"  => prefix for cache tags
-     *  "serializer"  => serializer object
+     *  "serializer"  => one of predefined serializer objects: BuiltIn or Igbinary
      *
      * @codeCoverageIgnore
      * @param array $options
@@ -56,6 +56,31 @@ abstract class Common implements Driver
     public function __construct(array $options = array())
     {
         $this->options = array_merge($this->defaultOptions, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param \Endeveit\Cache\Interfaces\Serializer $serializer
+     */
+    public function setSerializer(Serializer $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Endeveit\Cache\Interfaces\Serializer
+     */
+    public function getSerializer()
+    {
+        if (null === $this->serializer) {
+            $className        = 'Endeveit\Cache\Serializers\\' . $this->getOption('serializer');
+            $this->serializer = new $className();
+        }
+
+        return $this->serializer;
     }
 
     /**
@@ -203,21 +228,6 @@ abstract class Common implements Driver
     protected function getOption($name, $default = null)
     {
         return array_key_exists($name, $this->options) ? $this->options[$name] : $default;
-    }
-
-    /**
-     * Returns serializer object.
-     *
-     * @return \Endeveit\Cache\Interfaces\Serializer
-     */
-    protected function getSerializer()
-    {
-        if (null === $this->serializer) {
-            $className        = 'Endeveit\Cache\Serializers\\' . $this->getOption('serializer');
-            $this->serializer = new $className();
-        }
-
-        return $this->serializer;
     }
 
     /**

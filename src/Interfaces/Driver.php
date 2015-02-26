@@ -13,6 +13,21 @@ namespace Endeveit\Cache\Interfaces;
  */
 interface Driver
 {
+    /**
+     * Provides serializer object.
+     *
+     * @param  \Endeveit\Cache\Interfaces\Serializer $serializer
+     * @return void
+     */
+    public function setSerializer(Serializer $serializer);
+
+    /**
+     * Returns serializer object.
+     * If serializer object is not provided, BuiltIn serializer will be instantiated and returned.
+     *
+     * @return \Endeveit\Cache\Interfaces\Serializer
+     */
+    public function getSerializer();
 
     /**
      * Returns an item.
