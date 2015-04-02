@@ -9,6 +9,8 @@
 namespace Endeveit\Cache\Drivers;
 
 use Endeveit\Cache\Interfaces\Driver;
+use Endeveit\Cache\Interfaces\Serializer;
+use Endeveit\Cache\Serializers\BuiltIn;
 
 /**
  * The stub object used only to implement the Driver interfaces.
@@ -16,6 +18,13 @@ use Endeveit\Cache\Interfaces\Driver;
  */
 class BlackHole implements Driver
 {
+
+    /**
+     * {@inheritdoc}
+     *
+     * @var \Endeveit\Cache\Interfaces\Serializer
+     */
+    protected $serializer = null;
 
     /**
      * {@inheritdoc}
@@ -134,5 +143,30 @@ class BlackHole implements Driver
     public function flush()
     {
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param  \Endeveit\Cache\Interfaces\Serializer $serializer
+     * @return void
+     */
+    public function setSerializer(Serializer $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Endeveit\Cache\Interfaces\Serializer
+     */
+    public function getSerializer()
+    {
+        if (null === $this->serializer) {
+            $this->serializer = new BuiltIn();
+        }
+
+        return $this->serializer;
     }
 }
