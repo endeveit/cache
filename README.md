@@ -1,7 +1,7 @@
 Cache library
 =============
 
-[![Build Status](https://travis-ci.org/endeveit/cache.png?branch=master)](https://travis-ci.org/endeveit/cache) [![Coverage Status](https://img.shields.io/coveralls/endeveit/cache.svg)](https://coveralls.io/r/endeveit/cache?branch=master) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/endeveit/cache/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/endeveit/cache/?branch=master) [![Latest Stable Version](https://poser.pugx.org/endeveit/cache/v/stable.svg)](https://packagist.org/packages/endeveit/cache) [![Total Downloads](https://poser.pugx.org/endeveit/cache/downloads.svg)](https://packagist.org/packages/endeveit/cache) [![License](https://poser.pugx.org/endeveit/cache/license.svg)](https://packagist.org/packages/endeveit/cache)
+[![Build Status](https://travis-ci.org/endeveit/cache.png?branch=master)](https://travis-ci.org/endeveit/cache) [![Coverage Status](https://img.shields.io/coveralls/endeveit/cache.svg)](https://coveralls.io/r/endeveit/cache?branch=master) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/endeveit/cache/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/endeveit/cache/?branch=master) [![Latest Stable Version](https://poser.pugx.org/endeveit/cache/v/stable.svg)](https://packagist.org/packages/endeveit/cache) [![License](https://poser.pugx.org/endeveit/cache/license.svg)](https://packagist.org/packages/endeveit/cache)
 
 Simple caching library with support for tags.
 
