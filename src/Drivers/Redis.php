@@ -170,7 +170,13 @@ class Redis extends Common
         $now    = time();
 
         foreach (array_keys($this->connectionsOptions) as $key) {
-            foreach ($this->getRedisObject($key)->mGet($identifiers) as $i => $row) {
+            $mGetResult = $this->getRedisObject($key)->mGet($identifiers);
+
+            if ($mGetResult === false) {
+                continue;
+            }
+
+            foreach ($mGetResult as $i => $row) {
                 if (empty($row)) {
                     continue;
                 }
