@@ -151,8 +151,7 @@ abstract class Common implements Driver
         return $this->doSave(
             $source,
             $this->getPrefixedIdentifier($id),
-            array_map(array($this, 'getPrefixedTag'), $tags),
-            $lifetime
+            array_map(array($this, 'getPrefixedTag'), $tags)
         );
     }
 
@@ -271,13 +270,21 @@ abstract class Common implements Driver
      */
     protected function fillNotFoundKeys(array &$result, array &$identifiers)
     {
-        if (count($result) != count($identifiers)) {
-            $identifiers = array_map(array($this, 'getIdentifierWithoutPrefix'), $identifiers);
+        $tmp = array();
+        $ids = array_map(array($this, 'getIdentifierWithoutPrefix'), $identifiers);
 
-            foreach (array_diff($identifiers, array_keys($result)) as $notExist) {
+        if (count($result) != count($identifiers)) {
+            foreach (array_diff($ids, array_keys($result)) as $notExist) {
                 $result[$notExist] = false;
             }
         }
+
+        // Sort the results according to the order in $identifiers variable
+        foreach ($ids as $id) {
+            $tmp[$id] = $result[$id];
+        }
+
+        $result = $tmp;
     }
 
     /**
