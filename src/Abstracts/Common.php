@@ -22,10 +22,11 @@ abstract class Common implements Driver
      * @var array
      */
     protected $defaultOptions = array(
-        'lock_suffix' => '.lock',
-        'prefix_id'   => '',
-        'prefix_tag'  => 'tag.',
-        'serializer'  => 'BuiltIn',
+        'lock_suffix'      => '.lock',
+        'prefix_id'        => '',
+        'prefix_tag'       => 'tag.',
+        'serializer'       => 'BuiltIn',
+        'throw_exceptions' => true,
     );
 
     /**
@@ -45,10 +46,11 @@ abstract class Common implements Driver
     /**
      * Class constructor.
      * Available options:
-     *  "lock_suffix" => suffix for read lock key
-     *  "prefix_id"   => prefix for cache keys
-     *  "prefix_tag"  => prefix for cache tags
-     *  "serializer"  => one of predefined serializer objects: BuiltIn or Igbinary
+     *  "lock_suffix"      => suffix for read lock key
+     *  "prefix_id"        => prefix for cache keys
+     *  "prefix_tag"       => prefix for cache tags
+     *  "serializer"       => one of predefined serializer objects: BuiltIn or Igbinary
+     *  "throw_exceptions" => exception will be thrown on read/write errors
      *
      * @codeCoverageIgnore
      * @param array $options
@@ -89,6 +91,7 @@ abstract class Common implements Driver
      * @param  string       $id
      * @param  integer|null $lockTimeout
      * @return mixed|false  Data on success, false on failure
+     * @throws \Exception
      */
     public function load($id, $lockTimeout = null)
     {
@@ -103,15 +106,24 @@ abstract class Common implements Driver
 
                 if (null !== $lockTimeout) {
                     $lockId = $this->getPrefixedIdentifier($id . $this->getOption('lock_suffix'));
-                    $exists = $this->doLoadRaw($lockId);
 
-                    if (!$exists) {
-                        // Set the lock and return false
-                        $this->doSaveScalar(1, $lockId, intval($lockTimeout));
+                    try {
+                        $exists = $this->doLoadRaw($lockId);
 
-                        $result = false;
-                    } else {
-                        $result = $source['data'];
+                        if (!$exists) {
+                            // Set the lock and return false
+                            $this->doSaveScalar(1, $lockId, intval($lockTimeout));
+
+                            $result = false;
+                        } else {
+                            $result = $source['data'];
+                        }
+                    } catch (\Exception $e) {
+                        if (true === $this->getOption('throw_exceptions', true)) {
+                            throw $e;
+                        } else {
+                            return false;
+                        }
                     }
                 }
             }
@@ -139,6 +151,7 @@ abstract class Common implements Driver
      * @param  array           $tags
      * @param  integer|boolean $lifetime
      * @return boolean
+     * @throws \Exception
      */
     public function save($data, $id, array $tags = array(), $lifetime = false)
     {
@@ -148,11 +161,21 @@ abstract class Common implements Driver
             $source['expiresAt'] = time() + intval($lifetime);
         }
 
-        return $this->doSave(
-            $source,
-            $this->getPrefixedIdentifier($id),
-            array_map(array($this, 'getPrefixedTag'), $tags)
-        );
+        try {
+            $result = $this->doSave(
+                $source,
+                $this->getPrefixedIdentifier($id),
+                array_map(array($this, 'getPrefixedTag'), $tags)
+            );
+        } catch (\Exception $e) {
+            if (true === $this->getOption('throw_exceptions', true)) {
+                throw $e;
+            } else {
+                $result = false;
+            }
+        }
+
+        return $result;
     }
 
     /**

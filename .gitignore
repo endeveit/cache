@@ -1,5 +1,6 @@
 /build/
 /tests/travis/redis/*
 /vendor/
+*.iml
 .idea
 composer.lock
