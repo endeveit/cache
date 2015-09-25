@@ -6,7 +6,7 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Endeveit\Cache\Tests\Drivers;
+namespace EndeveitTests\Cache\Drivers;
 
 /**
  * Base class for drivers tests.

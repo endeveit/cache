@@ -6,14 +6,14 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Endeveit\Cache\Tests\Drivers;
+namespace EndeveitTests\Cache\Drivers;
 
-use Endeveit\Cache\Drivers\Apc as Driver;
+use Endeveit\Cache\Drivers\XCache as Driver;
 
 /**
- * Tests for \Endeveit\Cache\Drivers\Apc.
+ * Tests for \Endeveit\Cache\Drivers\XCache.
  */
-class ApcTest extends MemcacheTest
+class XCacheTest extends MemcacheTest
 {
 
     /**
@@ -23,6 +23,6 @@ class ApcTest extends MemcacheTest
      */
     protected static function getDriver()
     {
-        return extension_loaded('apc') ? new Driver(array('prefix_id' => 'PHPUnit_')) : null;
+        return extension_loaded('xcache') ? new Driver(array('prefix_id' => 'PHPUnit_')) : null;
     }
 }

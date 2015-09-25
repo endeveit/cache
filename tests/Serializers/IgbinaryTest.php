@@ -6,7 +6,7 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Endeveit\Cache\Tests\Serializers;
+namespace EndeveitTests\Cache\Serializers;
 
 use Endeveit\Cache\Serializers\Igbinary;
 
