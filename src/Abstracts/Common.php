@@ -140,7 +140,7 @@ abstract class Common implements Driver
      */
     public function loadMany(array $identifiers)
     {
-        return $this->doLoadMany(array_map(array($this, 'getPrefixedIdentifier'), $identifiers));
+        return $this->doLoadMany(array_map(array($this, 'getPrefixedIdentifier'), array_values($identifiers)));
     }
 
     /**
