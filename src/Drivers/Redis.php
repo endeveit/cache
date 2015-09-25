@@ -151,7 +151,7 @@ class Redis extends Common
         $result = false;
         $source = $this->getConnection($id)->get($id);
 
-        if (!empty($source) && is_string($source)) {
+        if (!empty($source) && is_string($source) && !is_numeric($source)) {
             $result = $this->getSerializer()->unserialize($source);
         }
 
