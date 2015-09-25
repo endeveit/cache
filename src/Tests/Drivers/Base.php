@@ -13,7 +13,6 @@ namespace Endeveit\Cache\Tests\Drivers;
  */
 abstract class Base extends \PHPUnit_Framework_TestCase
 {
-
     /**
      * Driver object.
      *
@@ -202,6 +201,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, self::$driver->increment($identifier));
         $this->assertEquals(3, self::$driver->increment($identifier, 2));
+        $this->assertEquals(3, self::$driver->load($identifier));
     }
 
     /**
@@ -214,6 +214,7 @@ abstract class Base extends \PHPUnit_Framework_TestCase
         $this->assertEquals(-10, self::$driver->decrement($identifier, 10));
         $this->assertEquals(5, self::$driver->increment($identifier, 15));
         $this->assertEquals(2, self::$driver->decrement($identifier, 3));
+        $this->assertEquals(2, self::$driver->load($identifier));
     }
 
     /**

@@ -20,7 +20,6 @@ use Predis\Response\Status;
  */
 class Predis extends Common
 {
-
     /**
      * {@inheritdoc}
      *
@@ -72,14 +71,17 @@ class Predis extends Common
      */
     protected function doLoad($id)
     {
-        $result = false;
         $source = $this->getOption('client')->get($id);
 
-        if (!empty($source) && is_string($source)) {
-            $result = $this->getSerializer()->unserialize($source);
+        if (false !== $source) {
+            if (is_string($source) && !is_numeric($source)) {
+                $source = $this->getSerializer()->unserialize($source);
+            }
+
+            return $this->getProcessedLoadedValue($source);
         }
 
-        return $result;
+        return false;
     }
 
     /**
@@ -103,17 +105,20 @@ class Predis extends Common
                 continue;
             }
 
-            $source = $this->getSerializer()->unserialize($row);
-            $id     = $this->getIdentifierWithoutPrefix($identifiers[$key]);
+            $id = $this->getIdentifierWithoutPrefix($identifiers[$key]);
 
-            if (!empty($source) && is_array($source) && array_key_exists('data', $source)) {
-                if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
-                    $result[$id] = false;
-                } else {
-                    $result[$id] = $source['data'];
-                }
+            if (is_string($row) && !is_numeric($row)) {
+                $source = $this->getSerializer()->unserialize($row);
             } else {
+                $source = array(
+                    'data' => $row
+                );
+            }
+
+            if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
                 $result[$id] = false;
+            } else {
+                $result[$id] = $source['data'];
             }
         }
 
@@ -164,7 +169,7 @@ class Predis extends Common
     /**
      * {@inheritdoc}
      *
-     * @param  scalar          $data
+     * @param  mixed           $data
      * @param  string          $id
      * @param  integer|boolean $lifetime
      * @return boolean
