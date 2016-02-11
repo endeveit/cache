@@ -1,6 +1,6 @@
 {
     "name": "endeveit/cache",
-    "version": "1.1.9",
+    "version": "1.1.12",
     "type": "library",
     "description": "Simple caching library with support for tags.",
     "keywords": [
@@ -44,6 +44,11 @@
     "autoload": {
         "psr-4": {
             "Endeveit\\Cache\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "EndeveitTests\\Cache\\": "tests/"
         }
     }
 }

@@ -20,7 +20,6 @@ use Endeveit\Cache\Exception;
  */
 class Redis extends Common
 {
-
     const DEFAULT_PORT = 6379;
     const DEFAULT_TIMEOUT = 0.0;
     const DEFAULT_WEIGHT = 1;
@@ -148,14 +147,17 @@ class Redis extends Common
      */
     protected function doLoad($id)
     {
-        $result = false;
         $source = $this->getConnection($id)->get($id);
 
-        if (!empty($source) && is_string($source) && !is_numeric($source)) {
-            $result = $this->getSerializer()->unserialize($source);
+        if (false !== $source) {
+            if (is_string($source) && !is_numeric($source)) {
+                $source = $this->getSerializer()->unserialize($source);
+            }
+
+            return $this->getProcessedLoadedValue($source);
         }
 
-        return $result;
+        return false;
     }
 
     /**
@@ -181,17 +183,20 @@ class Redis extends Common
                     continue;
                 }
 
-                $id     = $this->getIdentifierWithoutPrefix($identifiers[$i]);
-                $source = $this->getSerializer()->unserialize($row);
+                $id = $this->getIdentifierWithoutPrefix($identifiers[$i]);
 
-                if (!empty($source) && is_array($source) && array_key_exists('data', $source)) {
-                    if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
-                        $result[$id] = false;
-                    } else {
-                        $result[$id] = $source['data'];
-                    }
+                if (is_string($row) && !is_numeric($row)) {
+                    $source = $this->getSerializer()->unserialize($row);
                 } else {
+                    $source = array(
+                        'data' => $row
+                    );
+                }
+
+                if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
                     $result[$id] = false;
+                } else {
+                    $result[$id] = $source['data'];
                 }
             }
         }
@@ -238,7 +243,7 @@ class Redis extends Common
     /**
      * {@inheritdoc}
      *
-     * @param  scalar          $data
+     * @param  mixed           $data
      * @param  string          $id
      * @param  integer|boolean $lifetime
      * @return boolean

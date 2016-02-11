@@ -6,7 +6,7 @@
  * @author Nikita Vershinin <endeveit@gmail.com>
  * @license MIT
  */
-namespace Endeveit\Cache\Tests\Drivers;
+namespace EndeveitTests\Cache\Drivers;
 
 use Endeveit\Cache\Drivers\Memcache as Driver;
 

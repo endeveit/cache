@@ -16,7 +16,6 @@ use Endeveit\Cache\Exception;
  */
 class Memcached extends Memcache
 {
-
     /**
      * {@inheritdoc}
      *
@@ -44,13 +43,7 @@ class Memcached extends Memcache
      */
     protected function doLoad($id)
     {
-        $result = $this->getOption('client')->get($id);
-
-        if (!empty($result) && is_array($result)) {
-            return $result;
-        }
-
-        return false;
+        return $this->getProcessedLoadedValue($this->getOption('client')->get($id));
     }
 
     /**
@@ -65,7 +58,9 @@ class Memcached extends Memcache
         $now    = time();
 
         foreach ($this->getOption('client')->getMulti($identifiers) as $id => $source) {
-            if (!empty($source) && is_array($source) && array_key_exists('data', $source)) {
+            $source = $this->getProcessedLoadedValue($source);
+
+            if (false !== $source) {
                 $i = $this->getIdentifierWithoutPrefix($id);
 
                 if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
@@ -114,7 +109,7 @@ class Memcached extends Memcache
     /**
      * {@inheritdoc}
      *
-     * @param  scalar          $data
+     * @param  mixed           $data
      * @param  string          $id
      * @param  integer|boolean $lifetime
      * @return boolean

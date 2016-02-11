@@ -19,7 +19,6 @@ use Endeveit\Cache\Exception;
  */
 class Memcache extends Common
 {
-
     /**
      * Separator which concatenates tags.
      *
@@ -125,11 +124,7 @@ class Memcache extends Common
     {
         $result = $this->getOption('client')->get($id, $this->getOption('compress', 0));
 
-        if (!empty($result) && is_array($result)) {
-            return $result;
-        }
-
-        return false;
+        return $this->getProcessedLoadedValue($result);
     }
 
     /**
@@ -144,7 +139,9 @@ class Memcache extends Common
         $now    = time();
 
         foreach ($this->getOption('client')->get($identifiers, $this->getOption('compress', 0)) as $id => $source) {
-            if (!empty($source) && is_array($source) && array_key_exists('data', $source)) {
+            $source = $this->getProcessedLoadedValue($source);
+
+            if (false !== $source) {
                 $i = $this->getIdentifierWithoutPrefix($id);
 
                 if (array_key_exists('expiresAt', $source) && ($source['expiresAt'] < $now)) {
@@ -193,7 +190,7 @@ class Memcache extends Common
     /**
      * {@inheritdoc}
      *
-     * @param  scalar          $data
+     * @param  mixed           $data
      * @param  string          $id
      * @param  integer|boolean $lifetime
      * @return boolean

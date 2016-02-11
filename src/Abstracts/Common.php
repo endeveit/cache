@@ -140,7 +140,7 @@ abstract class Common implements Driver
      */
     public function loadMany(array $identifiers)
     {
-        return $this->doLoadMany(array_map(array($this, 'getPrefixedIdentifier'), $identifiers));
+        return $this->doLoadMany(array_map(array($this, 'getPrefixedIdentifier'), array_values($identifiers)));
     }
 
     /**
@@ -311,6 +311,27 @@ abstract class Common implements Driver
     }
 
     /**
+     * Returns processed value from loaded data.
+     *
+     * @param  mixed         $source
+     * @return array|boolean
+     */
+    protected function getProcessedLoadedValue($source)
+    {
+        if (false !== $source) {
+            if (is_array($source) && array_key_exists('data', $source)) {
+                return $source;
+            } elseif (is_scalar($source)) {
+                return array(
+                    'data' => $source,
+                );
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns an item through selected driver.
      *
      * @param  string      $id
@@ -347,7 +368,7 @@ abstract class Common implements Driver
     /**
      * Store raw value in selected driver.
      *
-     * @param  scalar          $data
+     * @param  mixed           $data
      * @param  string          $id
      * @param  integer|boolean $lifetime
      * @return boolean

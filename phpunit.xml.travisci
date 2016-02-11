@@ -14,18 +14,15 @@
         >
     <testsuites>
         <testsuite name="Drivers">
-            <directory>./src/Tests/Drivers</directory>
+            <directory>./tests/Drivers</directory>
         </testsuite>
         <testsuite name="Serializers">
-            <directory>./src/Tests/Serializers</directory>
+            <directory>./tests/Serializers</directory>
         </testsuite>
     </testsuites>
     <filter>
         <whitelist>
           <directory suffix=".php">./src</directory>
-          <exclude>
-            <directory suffix=".php">./src/Tests</directory>
-          </exclude>
         </whitelist>
       </filter>
 </phpunit>
