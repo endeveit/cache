@@ -9,6 +9,7 @@
 namespace Endeveit\Cache\Serializers;
 
 use Endeveit\Cache\Interfaces\Serializer;
+
 /**
  * Serializer that compresses data with gzip.
  */
