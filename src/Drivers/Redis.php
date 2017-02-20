@@ -51,7 +51,7 @@ class Redis extends Common
      *
      * Additional options:
      *  "local_cache_size" => the size of local cache
-     *  "native_expired"   => use or not native expiration time
+     *  "native_expires"   => use or not native expiration time
      *  "servers"          => array with connections parameters
      *                        array(
      *                          array('host' => '127.0.0.1', 'port' => 6379, 'timeout' => 0.0, 'weight' => 2),
