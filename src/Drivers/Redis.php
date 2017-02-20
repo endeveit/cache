@@ -33,6 +33,8 @@ class Redis extends Common
     protected $hashring = array();
     protected $nbHashrings = 0;
 
+    protected $nativeExpires = false;
+
     protected $replicas = 256;
     protected $slicesCount = 0;
     protected $slicesHalf = 0;
@@ -49,6 +51,7 @@ class Redis extends Common
      *
      * Additional options:
      *  "local_cache_size" => the size of local cache
+     *  "native_expired"   => use or not native expiration time
      *  "servers"          => array with connections parameters
      *                        array(
      *                          array('host' => '127.0.0.1', 'port' => 6379, 'timeout' => 0.0, 'weight' => 2),
@@ -65,6 +68,11 @@ class Redis extends Common
         if (array_key_exists('local_cache_size', $options)) {
             $this->localCacheSize = intval($options['local_cache_size']);
             unset($options['local_cache_size']);
+        }
+
+        if (array_key_exists('native_expires', $options)) {
+            $this->nativeExpires = (bool) $options['native_expires'];
+            unset($options['native_expires']);
         }
 
         if (!array_key_exists('servers', $options) || !is_array($options['servers'])) {
@@ -229,7 +237,12 @@ class Redis extends Common
      */
     protected function doSave($data, $id, array $tags = array())
     {
-        $result = $this->getConnection($id)->set($id, $this->getSerializer()->serialize($data));
+        $conn   = $this->getConnection($id);
+        $result = $conn->set($id, $this->getSerializer()->serialize($data));
+
+        if ($this->nativeExpires && array_key_exists('expiresAt', $data) && is_int($data['expiresAt'])) {
+            $conn->expire($id, $data['expiresAt']);
+        }
 
         if (!empty($tags)) {
             foreach (array_unique($tags) as $tag) {
