@@ -241,7 +241,7 @@ class Redis extends Common
         $result = $conn->set($id, $this->getSerializer()->serialize($data));
 
         if ($this->nativeExpires && array_key_exists('expiresAt', $data) && is_int($data['expiresAt'])) {
-            $conn->expire($id, $data['expiresAt']);
+            $conn->expireAt($id, $data['expiresAt']);
         }
 
         if (!empty($tags)) {
