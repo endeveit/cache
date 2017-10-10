@@ -95,7 +95,7 @@ class Memcached extends Memcache
      * @param  array   $tags
      * @return boolean
      */
-    protected function doSave($data, $id, array $tags = array())
+    protected function doSave($data, $id, array $tags = array(), $lifetime = false)
     {
         $this->validateIdentifier($id);
 
