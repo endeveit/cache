@@ -54,9 +54,9 @@ class Redis extends Common
      *  "native_expires"   => use or not native expiration time
      *  "servers"          => array with connections parameters
      *                        array(
-     *                          array('host' => '127.0.0.1', 'port' => 6379, 'timeout' => 0.0, 'weight' => 2),
-     *                          array('host' => '127.0.0.1', 'port' => 6380, 'timeout' => 0.0, 'weight' => 1),
-     *                          array('host' => '127.0.0.1', 'port' => 6381, 'timeout' => 0.0, 'weight' => 1),
+     *                          array('host' => '127.0.0.1', 'port' => 6379, 'timeout' => 0.0, 'weight' => 2, 'password' => ''),
+     *                          array('host' => '127.0.0.1', 'port' => 6380, 'timeout' => 0.0, 'weight' => 1, 'password' => ''),
+     *                          array('host' => '127.0.0.1', 'port' => 6381, 'timeout' => 0.0, 'weight' => 1, 'password' => ''),
      *                        )
      *
      * @codeCoverageIgnore
@@ -90,7 +90,8 @@ class Redis extends Common
                 $server['host'],
                 array_key_exists('port', $server) ? intval($server['port']) : self::DEFAULT_PORT,
                 array_key_exists('timeout', $server) ? floatval($server['timeout']) : self::DEFAULT_TIMEOUT,
-                array_key_exists('weight', $server) ? intval($server['weight']) : self::DEFAULT_WEIGHT
+                array_key_exists('weight', $server) ? intval($server['weight']) : self::DEFAULT_WEIGHT,
+                array_key_exists('password', $server) ? $server['password'] : ''
             );
         }
     }
@@ -132,7 +133,7 @@ class Redis extends Common
      * @param  integer                   $weight
      * @throws \Endeveit\Cache\Exception
      */
-    protected function addConnection($host, $port, $timeout, $weight)
+    protected function addConnection($host, $port, $timeout, $weight, $password)
     {
         $key = crc32(json_encode(array($host, $port)));
         if (isset($this->backendsWeights[$key])) {
@@ -140,7 +141,7 @@ class Redis extends Common
         }
 
         $this->backendsWeights[$key] = $weight;
-        $this->connectionsOptions[$key] = array($host, $port, $timeout);
+        $this->connectionsOptions[$key] = array($host, $port, $timeout, $password);
 
         $this->nbBackends++;
 
@@ -415,6 +416,10 @@ class Redis extends Common
                 $this->connectionsOptions[$key][1],
                 $this->connectionsOptions[$key][2]
             );
+
+            if (!empty($this->connectionsOptions[$key][3])) {
+                $this->connections[$key]->auth($this->connectionsOptions[$key][3]);
+            }
         }
 
         return $this->connections[$key];
